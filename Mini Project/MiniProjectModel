@@ -1,0 +1,3507 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# SL-6 Mini-Project\n",
+    "\n",
+    "**Class**    : TE-9 <br>\n",
+    "**Batch**    : M9 <br>\n",
+    "**Group-ID** : 14 <br>\n",
+    "\n",
+    "**Group Members**\n",
+    "\n",
+    "RUCHIKA PANDE: 71829042K <br>\n",
+    "AASHISH PRASAD: 71829105M <br>\n",
+    "VEDANT PURANIK: 71829113B <br>\n",
+    "SAKSHI TANTAK : 71829281C <br>\n",
+    "\n",
+    "**Date Of Review**: 11th April, 2020\n",
+    "\n",
+    "**Reviewers**: <br> Prof. R. B. Murumkar <br> Dr. Emmanuel"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Import libraries"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "_cell_guid": "994e6f34-f52d-4301-be75-24bcdb62773d",
+    "_uuid": "e57ea06f08c82eb7e3722da4a3fa8340aea76fcd"
+   },
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as plt\n",
+    "from sklearn.preprocessing import LabelEncoder\n",
+    "from sklearn.ensemble import RandomForestClassifier as rfc\n",
+    "from sklearn.ensemble import GradientBoostingClassifier\n",
+    "from sklearn import tree\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "from sklearn import metrics\n",
+    "from sklearn.metrics import accuracy_score\n",
+    "from sklearn.model_selection import GridSearchCV\n",
+    "import xgboost as xgb\n",
+    "\n",
+    "from subprocess import check_output"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Import Dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "_cell_guid": "bcb2c4e3-9b50-401a-820d-86516ab627e0",
+    "_uuid": "443ae25c196175a0294a9aa4fd33a694beb83b9d"
+   },
+   "outputs": [],
+   "source": [
+    "#input dataset as a pandas dataframe\n",
+    "matches = pd.read_csv('matches.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "pandas.core.frame.DataFrame"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#display the type of object matches\n",
+    "type(matches)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<bound method NDFrame.describe of         id  season           city        date                        team1  \\\n",
+       "0        1    2017      Hyderabad  2017-04-05          Sunrisers Hyderabad   \n",
+       "1        2    2017           Pune  2017-04-06               Mumbai Indians   \n",
+       "2        3    2017         Rajkot  2017-04-07                Gujarat Lions   \n",
+       "3        4    2017         Indore  2017-04-08       Rising Pune Supergiant   \n",
+       "4        5    2017      Bangalore  2017-04-08  Royal Challengers Bangalore   \n",
+       "..     ...     ...            ...         ...                          ...   \n",
+       "751  11347    2019         Mumbai    05/05/19        Kolkata Knight Riders   \n",
+       "752  11412    2019        Chennai    07/05/19          Chennai Super Kings   \n",
+       "753  11413    2019  Visakhapatnam    08/05/19          Sunrisers Hyderabad   \n",
+       "754  11414    2019  Visakhapatnam    10/05/19               Delhi Capitals   \n",
+       "755  11415    2019      Hyderabad    12/05/19               Mumbai Indians   \n",
+       "\n",
+       "                           team2                  toss_winner toss_decision  \\\n",
+       "0    Royal Challengers Bangalore  Royal Challengers Bangalore         field   \n",
+       "1         Rising Pune Supergiant       Rising Pune Supergiant         field   \n",
+       "2          Kolkata Knight Riders        Kolkata Knight Riders         field   \n",
+       "3                Kings XI Punjab              Kings XI Punjab         field   \n",
+       "4               Delhi Daredevils  Royal Challengers Bangalore           bat   \n",
+       "..                           ...                          ...           ...   \n",
+       "751               Mumbai Indians               Mumbai Indians         field   \n",
+       "752               Mumbai Indians          Chennai Super Kings           bat   \n",
+       "753               Delhi Capitals               Delhi Capitals         field   \n",
+       "754          Chennai Super Kings          Chennai Super Kings         field   \n",
+       "755          Chennai Super Kings               Mumbai Indians           bat   \n",
+       "\n",
+       "     result  dl_applied                       winner  win_by_runs  \\\n",
+       "0    normal           0          Sunrisers Hyderabad           35   \n",
+       "1    normal           0       Rising Pune Supergiant            0   \n",
+       "2    normal           0        Kolkata Knight Riders            0   \n",
+       "3    normal           0              Kings XI Punjab            0   \n",
+       "4    normal           0  Royal Challengers Bangalore           15   \n",
+       "..      ...         ...                          ...          ...   \n",
+       "751  normal           0               Mumbai Indians            0   \n",
+       "752  normal           0               Mumbai Indians            0   \n",
+       "753  normal           0               Delhi Capitals            0   \n",
+       "754  normal           0          Chennai Super Kings            0   \n",
+       "755  normal           0               Mumbai Indians            1   \n",
+       "\n",
+       "     win_by_wickets player_of_match  \\\n",
+       "0                 0    Yuvraj Singh   \n",
+       "1                 7       SPD Smith   \n",
+       "2                10         CA Lynn   \n",
+       "3                 6      GJ Maxwell   \n",
+       "4                 0       KM Jadhav   \n",
+       "..              ...             ...   \n",
+       "751               9       HH Pandya   \n",
+       "752               6        AS Yadav   \n",
+       "753               2         RR Pant   \n",
+       "754               6    F du Plessis   \n",
+       "755               0       JJ Bumrah   \n",
+       "\n",
+       "                                         venue         umpire1  \\\n",
+       "0    Rajiv Gandhi International Stadium, Uppal     AY Dandekar   \n",
+       "1      Maharashtra Cricket Association Stadium  A Nand Kishore   \n",
+       "2       Saurashtra Cricket Association Stadium     Nitin Menon   \n",
+       "3                       Holkar Cricket Stadium    AK Chaudhary   \n",
+       "4                        M Chinnaswamy Stadium             NaN   \n",
+       "..                                         ...             ...   \n",
+       "751                           Wankhede Stadium   Nanda Kishore   \n",
+       "752                  M. A. Chidambaram Stadium     Nigel Llong   \n",
+       "753                           ACA-VDCA Stadium             NaN   \n",
+       "754                           ACA-VDCA Stadium   Sundaram Ravi   \n",
+       "755         Rajiv Gandhi Intl. Cricket Stadium     Nitin Menon   \n",
+       "\n",
+       "            umpire2                  umpire3  \n",
+       "0          NJ Llong                      NaN  \n",
+       "1            S Ravi                      NaN  \n",
+       "2         CK Nandan                      NaN  \n",
+       "3     C Shamshuddin                      NaN  \n",
+       "4               NaN                      NaN  \n",
+       "..              ...                      ...  \n",
+       "751        O Nandan                   S Ravi  \n",
+       "752     Nitin Menon                Ian Gould  \n",
+       "753             NaN                      NaN  \n",
+       "754  Bruce Oxenford  Chettithody Shamshuddin  \n",
+       "755       Ian Gould              Nigel Llong  \n",
+       "\n",
+       "[756 rows x 18 columns]>"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#describe dataset matches\n",
+    "matches.describe"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>city</th>\n",
+       "      <th>date</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>toss_decision</th>\n",
+       "      <th>result</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "      <th>player_of_match</th>\n",
+       "      <th>venue</th>\n",
+       "      <th>umpire1</th>\n",
+       "      <th>umpire2</th>\n",
+       "      <th>umpire3</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Hyderabad</td>\n",
+       "      <td>2017-04-05</td>\n",
+       "      <td>Sunrisers Hyderabad</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Sunrisers Hyderabad</td>\n",
+       "      <td>35</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Yuvraj Singh</td>\n",
+       "      <td>Rajiv Gandhi International Stadium, Uppal</td>\n",
+       "      <td>AY Dandekar</td>\n",
+       "      <td>NJ Llong</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Pune</td>\n",
+       "      <td>2017-04-06</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>Rising Pune Supergiant</td>\n",
+       "      <td>Rising Pune Supergiant</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Rising Pune Supergiant</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>SPD Smith</td>\n",
+       "      <td>Maharashtra Cricket Association Stadium</td>\n",
+       "      <td>A Nand Kishore</td>\n",
+       "      <td>S Ravi</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Rajkot</td>\n",
+       "      <td>2017-04-07</td>\n",
+       "      <td>Gujarat Lions</td>\n",
+       "      <td>Kolkata Knight Riders</td>\n",
+       "      <td>Kolkata Knight Riders</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Kolkata Knight Riders</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>CA Lynn</td>\n",
+       "      <td>Saurashtra Cricket Association Stadium</td>\n",
+       "      <td>Nitin Menon</td>\n",
+       "      <td>CK Nandan</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>3</td>\n",
+       "      <td>4</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Indore</td>\n",
+       "      <td>2017-04-08</td>\n",
+       "      <td>Rising Pune Supergiant</td>\n",
+       "      <td>Kings XI Punjab</td>\n",
+       "      <td>Kings XI Punjab</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Kings XI Punjab</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>GJ Maxwell</td>\n",
+       "      <td>Holkar Cricket Stadium</td>\n",
+       "      <td>AK Chaudhary</td>\n",
+       "      <td>C Shamshuddin</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>4</td>\n",
+       "      <td>5</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Bangalore</td>\n",
+       "      <td>2017-04-08</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>Delhi Daredevils</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>15</td>\n",
+       "      <td>0</td>\n",
+       "      <td>KM Jadhav</td>\n",
+       "      <td>M Chinnaswamy Stadium</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>5</td>\n",
+       "      <td>6</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Hyderabad</td>\n",
+       "      <td>2017-04-09</td>\n",
+       "      <td>Gujarat Lions</td>\n",
+       "      <td>Sunrisers Hyderabad</td>\n",
+       "      <td>Sunrisers Hyderabad</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Sunrisers Hyderabad</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9</td>\n",
+       "      <td>Rashid Khan</td>\n",
+       "      <td>Rajiv Gandhi International Stadium, Uppal</td>\n",
+       "      <td>A Deshmukh</td>\n",
+       "      <td>NJ Llong</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>6</td>\n",
+       "      <td>7</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Mumbai</td>\n",
+       "      <td>2017-04-09</td>\n",
+       "      <td>Kolkata Knight Riders</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>0</td>\n",
+       "      <td>4</td>\n",
+       "      <td>N Rana</td>\n",
+       "      <td>Wankhede Stadium</td>\n",
+       "      <td>Nitin Menon</td>\n",
+       "      <td>CK Nandan</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>7</td>\n",
+       "      <td>8</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Indore</td>\n",
+       "      <td>2017-04-10</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>Kings XI Punjab</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Kings XI Punjab</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8</td>\n",
+       "      <td>AR Patel</td>\n",
+       "      <td>Holkar Cricket Stadium</td>\n",
+       "      <td>AK Chaudhary</td>\n",
+       "      <td>C Shamshuddin</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>8</td>\n",
+       "      <td>9</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Pune</td>\n",
+       "      <td>2017-04-11</td>\n",
+       "      <td>Delhi Daredevils</td>\n",
+       "      <td>Rising Pune Supergiant</td>\n",
+       "      <td>Rising Pune Supergiant</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Delhi Daredevils</td>\n",
+       "      <td>97</td>\n",
+       "      <td>0</td>\n",
+       "      <td>SV Samson</td>\n",
+       "      <td>Maharashtra Cricket Association Stadium</td>\n",
+       "      <td>AY Dandekar</td>\n",
+       "      <td>S Ravi</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>9</td>\n",
+       "      <td>10</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Mumbai</td>\n",
+       "      <td>2017-04-12</td>\n",
+       "      <td>Sunrisers Hyderabad</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Mumbai Indians</td>\n",
+       "      <td>0</td>\n",
+       "      <td>4</td>\n",
+       "      <td>JJ Bumrah</td>\n",
+       "      <td>Wankhede Stadium</td>\n",
+       "      <td>Nitin Menon</td>\n",
+       "      <td>CK Nandan</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   id  season       city        date                        team1  \\\n",
+       "0   1    2017  Hyderabad  2017-04-05          Sunrisers Hyderabad   \n",
+       "1   2    2017       Pune  2017-04-06               Mumbai Indians   \n",
+       "2   3    2017     Rajkot  2017-04-07                Gujarat Lions   \n",
+       "3   4    2017     Indore  2017-04-08       Rising Pune Supergiant   \n",
+       "4   5    2017  Bangalore  2017-04-08  Royal Challengers Bangalore   \n",
+       "5   6    2017  Hyderabad  2017-04-09                Gujarat Lions   \n",
+       "6   7    2017     Mumbai  2017-04-09        Kolkata Knight Riders   \n",
+       "7   8    2017     Indore  2017-04-10  Royal Challengers Bangalore   \n",
+       "8   9    2017       Pune  2017-04-11             Delhi Daredevils   \n",
+       "9  10    2017     Mumbai  2017-04-12          Sunrisers Hyderabad   \n",
+       "\n",
+       "                         team2                  toss_winner toss_decision  \\\n",
+       "0  Royal Challengers Bangalore  Royal Challengers Bangalore         field   \n",
+       "1       Rising Pune Supergiant       Rising Pune Supergiant         field   \n",
+       "2        Kolkata Knight Riders        Kolkata Knight Riders         field   \n",
+       "3              Kings XI Punjab              Kings XI Punjab         field   \n",
+       "4             Delhi Daredevils  Royal Challengers Bangalore           bat   \n",
+       "5          Sunrisers Hyderabad          Sunrisers Hyderabad         field   \n",
+       "6               Mumbai Indians               Mumbai Indians         field   \n",
+       "7              Kings XI Punjab  Royal Challengers Bangalore           bat   \n",
+       "8       Rising Pune Supergiant       Rising Pune Supergiant         field   \n",
+       "9               Mumbai Indians               Mumbai Indians         field   \n",
+       "\n",
+       "   result  dl_applied                       winner  win_by_runs  \\\n",
+       "0  normal           0          Sunrisers Hyderabad           35   \n",
+       "1  normal           0       Rising Pune Supergiant            0   \n",
+       "2  normal           0        Kolkata Knight Riders            0   \n",
+       "3  normal           0              Kings XI Punjab            0   \n",
+       "4  normal           0  Royal Challengers Bangalore           15   \n",
+       "5  normal           0          Sunrisers Hyderabad            0   \n",
+       "6  normal           0               Mumbai Indians            0   \n",
+       "7  normal           0              Kings XI Punjab            0   \n",
+       "8  normal           0             Delhi Daredevils           97   \n",
+       "9  normal           0               Mumbai Indians            0   \n",
+       "\n",
+       "   win_by_wickets player_of_match                                      venue  \\\n",
+       "0               0    Yuvraj Singh  Rajiv Gandhi International Stadium, Uppal   \n",
+       "1               7       SPD Smith    Maharashtra Cricket Association Stadium   \n",
+       "2              10         CA Lynn     Saurashtra Cricket Association Stadium   \n",
+       "3               6      GJ Maxwell                     Holkar Cricket Stadium   \n",
+       "4               0       KM Jadhav                      M Chinnaswamy Stadium   \n",
+       "5               9     Rashid Khan  Rajiv Gandhi International Stadium, Uppal   \n",
+       "6               4          N Rana                           Wankhede Stadium   \n",
+       "7               8        AR Patel                     Holkar Cricket Stadium   \n",
+       "8               0       SV Samson    Maharashtra Cricket Association Stadium   \n",
+       "9               4       JJ Bumrah                           Wankhede Stadium   \n",
+       "\n",
+       "          umpire1        umpire2 umpire3  \n",
+       "0     AY Dandekar       NJ Llong     NaN  \n",
+       "1  A Nand Kishore         S Ravi     NaN  \n",
+       "2     Nitin Menon      CK Nandan     NaN  \n",
+       "3    AK Chaudhary  C Shamshuddin     NaN  \n",
+       "4             NaN            NaN     NaN  \n",
+       "5      A Deshmukh       NJ Llong     NaN  \n",
+       "6     Nitin Menon      CK Nandan     NaN  \n",
+       "7    AK Chaudhary  C Shamshuddin     NaN  \n",
+       "8     AY Dandekar         S Ravi     NaN  \n",
+       "9     Nitin Menon      CK Nandan     NaN  "
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "matches.head(10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(756, 18)"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#display shape of matches\n",
+    "matches.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['id', 'season', 'city', 'date', 'team1', 'team2', 'toss_winner',\n",
+       "       'toss_decision', 'result', 'dl_applied', 'winner', 'win_by_runs',\n",
+       "       'win_by_wickets', 'player_of_match', 'venue', 'umpire1', 'umpire2',\n",
+       "       'umpire3'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#display the columns of matches\n",
+    "matches.columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RangeIndex(start=0, stop=756, step=1)"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#display index of matches\n",
+    "matches.index"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Find missing values in the target variable \"winner\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Preprocessing of Data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "_cell_guid": "4ce2fb0f-a10a-4c82-a4b8-fddcdbcaf25f",
+    "_uuid": "7fb66312d6307f21e2e8e27294e0b3b25679d4dd"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>city</th>\n",
+       "      <th>date</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>toss_decision</th>\n",
+       "      <th>result</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "      <th>player_of_match</th>\n",
+       "      <th>venue</th>\n",
+       "      <th>umpire1</th>\n",
+       "      <th>umpire2</th>\n",
+       "      <th>umpire3</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>300</td>\n",
+       "      <td>301</td>\n",
+       "      <td>2011</td>\n",
+       "      <td>Delhi</td>\n",
+       "      <td>2011-05-21</td>\n",
+       "      <td>Delhi Daredevils</td>\n",
+       "      <td>Pune Warriors</td>\n",
+       "      <td>Delhi Daredevils</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>no result</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Feroz Shah Kotla</td>\n",
+       "      <td>SS Hazare</td>\n",
+       "      <td>RJ Tucker</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>545</td>\n",
+       "      <td>546</td>\n",
+       "      <td>2015</td>\n",
+       "      <td>Bangalore</td>\n",
+       "      <td>2015-04-29</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>Rajasthan Royals</td>\n",
+       "      <td>Rajasthan Royals</td>\n",
+       "      <td>field</td>\n",
+       "      <td>no result</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>M Chinnaswamy Stadium</td>\n",
+       "      <td>JD Cloete</td>\n",
+       "      <td>PG Pathak</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>570</td>\n",
+       "      <td>571</td>\n",
+       "      <td>2015</td>\n",
+       "      <td>Bangalore</td>\n",
+       "      <td>2015-05-17</td>\n",
+       "      <td>Delhi Daredevils</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>field</td>\n",
+       "      <td>no result</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>M Chinnaswamy Stadium</td>\n",
+       "      <td>HDPK Dharmasena</td>\n",
+       "      <td>K Srinivasan</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>744</td>\n",
+       "      <td>11340</td>\n",
+       "      <td>2019</td>\n",
+       "      <td>Bengaluru</td>\n",
+       "      <td>30/04/19</td>\n",
+       "      <td>Royal Challengers Bangalore</td>\n",
+       "      <td>Rajasthan Royals</td>\n",
+       "      <td>Rajasthan Royals</td>\n",
+       "      <td>field</td>\n",
+       "      <td>no result</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>M. Chinnaswamy Stadium</td>\n",
+       "      <td>Nigel Llong</td>\n",
+       "      <td>Ulhas Gandhe</td>\n",
+       "      <td>Anil Chaudhary</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "        id  season       city        date                        team1  \\\n",
+       "300    301    2011      Delhi  2011-05-21             Delhi Daredevils   \n",
+       "545    546    2015  Bangalore  2015-04-29  Royal Challengers Bangalore   \n",
+       "570    571    2015  Bangalore  2015-05-17             Delhi Daredevils   \n",
+       "744  11340    2019  Bengaluru    30/04/19  Royal Challengers Bangalore   \n",
+       "\n",
+       "                           team2                  toss_winner toss_decision  \\\n",
+       "300                Pune Warriors             Delhi Daredevils           bat   \n",
+       "545             Rajasthan Royals             Rajasthan Royals         field   \n",
+       "570  Royal Challengers Bangalore  Royal Challengers Bangalore         field   \n",
+       "744             Rajasthan Royals             Rajasthan Royals         field   \n",
+       "\n",
+       "        result  dl_applied winner  win_by_runs  win_by_wickets  \\\n",
+       "300  no result           0    NaN            0               0   \n",
+       "545  no result           0    NaN            0               0   \n",
+       "570  no result           0    NaN            0               0   \n",
+       "744  no result           0    NaN            0               0   \n",
+       "\n",
+       "    player_of_match                   venue          umpire1       umpire2  \\\n",
+       "300             NaN        Feroz Shah Kotla        SS Hazare     RJ Tucker   \n",
+       "545             NaN   M Chinnaswamy Stadium        JD Cloete     PG Pathak   \n",
+       "570             NaN   M Chinnaswamy Stadium  HDPK Dharmasena  K Srinivasan   \n",
+       "744             NaN  M. Chinnaswamy Stadium      Nigel Llong  Ulhas Gandhe   \n",
+       "\n",
+       "            umpire3  \n",
+       "300             NaN  \n",
+       "545             NaN  \n",
+       "570             NaN  \n",
+       "744  Anil Chaudhary  "
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#detect missing values for winner column in matches\n",
+    "matches[pd.isnull(matches['winner'])]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Replace missing values in \"winner\" with \"Draw\" as a match that doesn't have a winner is declared Draw"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "_cell_guid": "e0f4b1e8-c456-4326-916e-d2c31a5ed1b1",
+    "_uuid": "554b5faf595dadc27311566b5c4d2a3c2e38d301"
+   },
+   "outputs": [],
+   "source": [
+    "#replace null values in winner with \"Draw\" since an undecided winner of a match clearly means it is a draw\n",
+    "matches['winner'].fillna('Draw', inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Find the number of unique teams in the entire dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "15\n"
+     ]
+    }
+   ],
+   "source": [
+    "#print the number of unique teams in the given dataset\n",
+    "print(str(matches['team1'].nunique()))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Encode the team names to abbreviations for ease"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "_cell_guid": "3379288c-b75b-49bf-ba1f-cb587711fb2d",
+    "_uuid": "50eadf5ec6d3067761775e5287f5c65afdbc2ec7",
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "#replace the team names wih their abbreviations as follows\n",
+    "#Note that Rising Pune Supergiant and Rising Pune Supergiants are the same, thus encoded the same\n",
+    "matches.replace(['Mumbai Indians','Kolkata Knight Riders','Royal Challengers Bangalore','Deccan Chargers','Chennai Super Kings',\n",
+    "                 'Rajasthan Royals','Delhi Daredevils','Gujarat Lions','Kings XI Punjab',\n",
+    "                 'Sunrisers Hyderabad','Rising Pune Supergiants','Rising Pune Supergiant','Kochi Tuskers Kerala','Pune Warriors', 'Delhi Capitals']\n",
+    "                ,['MI','KKR','RCB','DC','CSK','RR','DD','GL','KXIP','SRH','RPS','RPS','KTK','PW','DLC'],inplace=True)\n",
+    "\n",
+    "#encode the abbreviated names of teams into numbers for applying models further\n",
+    "encode = {'team1': {'MI':1,'KKR':2,'RCB':3,'DC':4,'CSK':5,'RR':6,'DD':7,'GL':8,'KXIP':9,'SRH':10,'RPS':11,'KTK':12,'PW':13,'DLC':14},\n",
+    "          'team2': {'MI':1,'KKR':2,'RCB':3,'DC':4,'CSK':5,'RR':6,'DD':7,'GL':8,'KXIP':9,'SRH':10,'RPS':11,'KTK':12,'PW':13,'DLC':14},\n",
+    "          'toss_winner': {'MI':1,'KKR':2,'RCB':3,'DC':4,'CSK':5,'RR':6,'DD':7,'GL':8,'KXIP':9,'SRH':10,'RPS':11,'KTK':12,'PW':13,'DLC':14},\n",
+    "          'winner': {'MI':1,'KKR':2,'RCB':3,'DC':4,'CSK':5,'RR':6,'DD':7,'GL':8,'KXIP':9,'SRH':10,'RPS':11,'KTK':12,'PW':13,'DLC':14,'Draw':15}}\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Replace the team names with encoded abbreviations in the entire dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>city</th>\n",
+       "      <th>date</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>toss_decision</th>\n",
+       "      <th>result</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "      <th>player_of_match</th>\n",
+       "      <th>venue</th>\n",
+       "      <th>umpire1</th>\n",
+       "      <th>umpire2</th>\n",
+       "      <th>umpire3</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Hyderabad</td>\n",
+       "      <td>2017-04-05</td>\n",
+       "      <td>10</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>35</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Yuvraj Singh</td>\n",
+       "      <td>Rajiv Gandhi International Stadium, Uppal</td>\n",
+       "      <td>AY Dandekar</td>\n",
+       "      <td>NJ Llong</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Pune</td>\n",
+       "      <td>2017-04-06</td>\n",
+       "      <td>1</td>\n",
+       "      <td>11</td>\n",
+       "      <td>11</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>SPD Smith</td>\n",
+       "      <td>Maharashtra Cricket Association Stadium</td>\n",
+       "      <td>A Nand Kishore</td>\n",
+       "      <td>S Ravi</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   id  season       city        date  team1  team2  toss_winner toss_decision  \\\n",
+       "0   1    2017  Hyderabad  2017-04-05     10      3            3         field   \n",
+       "1   2    2017       Pune  2017-04-06      1     11           11         field   \n",
+       "\n",
+       "   result  dl_applied  winner  win_by_runs  win_by_wickets player_of_match  \\\n",
+       "0  normal           0      10           35               0    Yuvraj Singh   \n",
+       "1  normal           0      11            0               7       SPD Smith   \n",
+       "\n",
+       "                                       venue         umpire1   umpire2 umpire3  \n",
+       "0  Rajiv Gandhi International Stadium, Uppal     AY Dandekar  NJ Llong     NaN  \n",
+       "1    Maharashtra Cricket Association Stadium  A Nand Kishore    S Ravi     NaN  "
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#replace team1, team2, toss_winner and winner columns values with values of the same in the encoded dataframe in place\n",
+    "matches.replace(encode, inplace=True)\n",
+    "matches.head(2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Find the rows corresponding to null values for \"city\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "_cell_guid": "5a5effe0-0045-4c07-a6b5-c1865ba8ae27",
+    "_uuid": "09ccf7d5f02e7f7d56029ea7f86968de5f6222dc"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>city</th>\n",
+       "      <th>date</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>toss_decision</th>\n",
+       "      <th>result</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "      <th>player_of_match</th>\n",
+       "      <th>venue</th>\n",
+       "      <th>umpire1</th>\n",
+       "      <th>umpire2</th>\n",
+       "      <th>umpire3</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>461</td>\n",
+       "      <td>462</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-19</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>PA Patel</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>Aleem Dar</td>\n",
+       "      <td>AK Chaudhary</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>462</td>\n",
+       "      <td>463</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-19</td>\n",
+       "      <td>2</td>\n",
+       "      <td>7</td>\n",
+       "      <td>2</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>0</td>\n",
+       "      <td>4</td>\n",
+       "      <td>JP Duminy</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>Aleem Dar</td>\n",
+       "      <td>VA Kulkarni</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>466</td>\n",
+       "      <td>467</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-23</td>\n",
+       "      <td>5</td>\n",
+       "      <td>6</td>\n",
+       "      <td>6</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>5</td>\n",
+       "      <td>7</td>\n",
+       "      <td>0</td>\n",
+       "      <td>RA Jadeja</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>HDPK Dharmasena</td>\n",
+       "      <td>RK Illingworth</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>468</td>\n",
+       "      <td>469</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-25</td>\n",
+       "      <td>10</td>\n",
+       "      <td>7</td>\n",
+       "      <td>10</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>4</td>\n",
+       "      <td>0</td>\n",
+       "      <td>AJ Finch</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>M Erasmus</td>\n",
+       "      <td>S Ravi</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>469</td>\n",
+       "      <td>470</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-25</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>MM Sharma</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>BF Bowden</td>\n",
+       "      <td>M Erasmus</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>474</td>\n",
+       "      <td>475</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-28</td>\n",
+       "      <td>3</td>\n",
+       "      <td>9</td>\n",
+       "      <td>9</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9</td>\n",
+       "      <td>0</td>\n",
+       "      <td>5</td>\n",
+       "      <td>Sandeep Sharma</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>BF Bowden</td>\n",
+       "      <td>S Ravi</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>476</td>\n",
+       "      <td>477</td>\n",
+       "      <td>2014</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>2014-04-30</td>\n",
+       "      <td>10</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>15</td>\n",
+       "      <td>0</td>\n",
+       "      <td>B Kumar</td>\n",
+       "      <td>Dubai International Cricket Stadium</td>\n",
+       "      <td>HDPK Dharmasena</td>\n",
+       "      <td>M Erasmus</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "      id  season city        date  team1  team2  toss_winner toss_decision  \\\n",
+       "461  462    2014  NaN  2014-04-19      1      3            3         field   \n",
+       "462  463    2014  NaN  2014-04-19      2      7            2           bat   \n",
+       "466  467    2014  NaN  2014-04-23      5      6            6         field   \n",
+       "468  469    2014  NaN  2014-04-25     10      7           10           bat   \n",
+       "469  470    2014  NaN  2014-04-25      1      5            1           bat   \n",
+       "474  475    2014  NaN  2014-04-28      3      9            9         field   \n",
+       "476  477    2014  NaN  2014-04-30     10      1            1         field   \n",
+       "\n",
+       "     result  dl_applied  winner  win_by_runs  win_by_wickets player_of_match  \\\n",
+       "461  normal           0       3            0               7        PA Patel   \n",
+       "462  normal           0       7            0               4       JP Duminy   \n",
+       "466  normal           0       5            7               0       RA Jadeja   \n",
+       "468  normal           0      10            4               0        AJ Finch   \n",
+       "469  normal           0       5            0               7       MM Sharma   \n",
+       "474  normal           0       9            0               5  Sandeep Sharma   \n",
+       "476  normal           0      10           15               0         B Kumar   \n",
+       "\n",
+       "                                   venue          umpire1         umpire2  \\\n",
+       "461  Dubai International Cricket Stadium        Aleem Dar    AK Chaudhary   \n",
+       "462  Dubai International Cricket Stadium        Aleem Dar     VA Kulkarni   \n",
+       "466  Dubai International Cricket Stadium  HDPK Dharmasena  RK Illingworth   \n",
+       "468  Dubai International Cricket Stadium        M Erasmus          S Ravi   \n",
+       "469  Dubai International Cricket Stadium        BF Bowden       M Erasmus   \n",
+       "474  Dubai International Cricket Stadium        BF Bowden          S Ravi   \n",
+       "476  Dubai International Cricket Stadium  HDPK Dharmasena       M Erasmus   \n",
+       "\n",
+       "    umpire3  \n",
+       "461     NaN  \n",
+       "462     NaN  \n",
+       "466     NaN  \n",
+       "468     NaN  \n",
+       "469     NaN  \n",
+       "474     NaN  \n",
+       "476     NaN  "
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Find rows that have null city values\n",
+    "matches[pd.isnull(matches['city'])]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Replace the null values in \"city\" with \"Dubai\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "_cell_guid": "ecb32737-0f39-476b-b52d-f74cf5eab927",
+    "_uuid": "889aec3128d425cf7e99714c570c164b069dfaf3"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>count</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>mean</td>\n",
+       "      <td>1792.178571</td>\n",
+       "      <td>2013.444444</td>\n",
+       "      <td>5.554233</td>\n",
+       "      <td>5.604497</td>\n",
+       "      <td>5.462963</td>\n",
+       "      <td>0.025132</td>\n",
+       "      <td>5.416667</td>\n",
+       "      <td>13.283069</td>\n",
+       "      <td>3.350529</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>std</td>\n",
+       "      <td>3464.478148</td>\n",
+       "      <td>3.366895</td>\n",
+       "      <td>3.389656</td>\n",
+       "      <td>3.411850</td>\n",
+       "      <td>3.361638</td>\n",
+       "      <td>0.156630</td>\n",
+       "      <td>3.421736</td>\n",
+       "      <td>23.471144</td>\n",
+       "      <td>3.387963</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>min</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>2008.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>25%</td>\n",
+       "      <td>189.750000</td>\n",
+       "      <td>2011.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>2.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>2.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>50%</td>\n",
+       "      <td>378.500000</td>\n",
+       "      <td>2013.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>4.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>75%</td>\n",
+       "      <td>567.250000</td>\n",
+       "      <td>2016.000000</td>\n",
+       "      <td>9.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>19.000000</td>\n",
+       "      <td>6.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>max</td>\n",
+       "      <td>11415.000000</td>\n",
+       "      <td>2019.000000</td>\n",
+       "      <td>14.000000</td>\n",
+       "      <td>14.000000</td>\n",
+       "      <td>14.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>15.000000</td>\n",
+       "      <td>146.000000</td>\n",
+       "      <td>10.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                 id       season       team1       team2  toss_winner  \\\n",
+       "count    756.000000   756.000000  756.000000  756.000000   756.000000   \n",
+       "mean    1792.178571  2013.444444    5.554233    5.604497     5.462963   \n",
+       "std     3464.478148     3.366895    3.389656    3.411850     3.361638   \n",
+       "min        1.000000  2008.000000    1.000000    1.000000     1.000000   \n",
+       "25%      189.750000  2011.000000    3.000000    3.000000     2.000000   \n",
+       "50%      378.500000  2013.000000    5.000000    5.000000     5.000000   \n",
+       "75%      567.250000  2016.000000    9.000000    8.000000     8.000000   \n",
+       "max    11415.000000  2019.000000   14.000000   14.000000    14.000000   \n",
+       "\n",
+       "       dl_applied      winner  win_by_runs  win_by_wickets  \n",
+       "count  756.000000  756.000000   756.000000      756.000000  \n",
+       "mean     0.025132    5.416667    13.283069        3.350529  \n",
+       "std      0.156630    3.421736    23.471144        3.387963  \n",
+       "min      0.000000    1.000000     0.000000        0.000000  \n",
+       "25%      0.000000    2.000000     0.000000        0.000000  \n",
+       "50%      0.000000    5.000000     0.000000        4.000000  \n",
+       "75%      0.000000    8.000000    19.000000        6.000000  \n",
+       "max      1.000000   15.000000   146.000000       10.000000  "
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#remove any null values, winner has, hence fill the null value in winner as draw\n",
+    "#City is also null\n",
+    "matches['city'].fillna('Dubai',inplace=True)\n",
+    "matches.describe()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Store the \"winner\" in a dictionary"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "_cell_guid": "3b8b05ed-f20e-4713-9d2e-3daf430eceb6",
+    "_uuid": "30ab2dcb21ad5f951be6c56c25b5166d6c388692"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'MI': 1, 'KKR': 2, 'RCB': 3, 'DC': 4, 'CSK': 5, 'RR': 6, 'DD': 7, 'GL': 8, 'KXIP': 9, 'SRH': 10, 'RPS': 11, 'KTK': 12, 'PW': 13, 'DLC': 14, 'Draw': 15}\n"
+     ]
+    }
+   ],
+   "source": [
+    "#store the winner columns of matches into a dictionary dicVal\n",
+    "dicVal = encode['winner']\n",
+    "\n",
+    "#print the dictionary\n",
+    "print(dicVal)\n",
+    "\n",
+    "#print(dicVal['MI']) #key value\n",
+    "#print(list(dicVal.keys())[list(dicVal.values()).index(1)]) #find key by value search "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Make a new pandas dataframe df_matches to work on and process"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "_cell_guid": "1fd6e17a-7031-4205-b6e9-3a62a2f4c4fc",
+    "_uuid": "0dde32b2190ed99290afe50a5955db11f54c725a"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>count</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "      <td>756.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>mean</td>\n",
+       "      <td>1792.178571</td>\n",
+       "      <td>2013.444444</td>\n",
+       "      <td>5.554233</td>\n",
+       "      <td>5.604497</td>\n",
+       "      <td>5.462963</td>\n",
+       "      <td>0.025132</td>\n",
+       "      <td>5.416667</td>\n",
+       "      <td>13.283069</td>\n",
+       "      <td>3.350529</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>std</td>\n",
+       "      <td>3464.478148</td>\n",
+       "      <td>3.366895</td>\n",
+       "      <td>3.389656</td>\n",
+       "      <td>3.411850</td>\n",
+       "      <td>3.361638</td>\n",
+       "      <td>0.156630</td>\n",
+       "      <td>3.421736</td>\n",
+       "      <td>23.471144</td>\n",
+       "      <td>3.387963</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>min</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>2008.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>25%</td>\n",
+       "      <td>189.750000</td>\n",
+       "      <td>2011.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>3.000000</td>\n",
+       "      <td>2.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>2.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>50%</td>\n",
+       "      <td>378.500000</td>\n",
+       "      <td>2013.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>5.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>4.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>75%</td>\n",
+       "      <td>567.250000</td>\n",
+       "      <td>2016.000000</td>\n",
+       "      <td>9.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>8.000000</td>\n",
+       "      <td>19.000000</td>\n",
+       "      <td>6.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>max</td>\n",
+       "      <td>11415.000000</td>\n",
+       "      <td>2019.000000</td>\n",
+       "      <td>14.000000</td>\n",
+       "      <td>14.000000</td>\n",
+       "      <td>14.000000</td>\n",
+       "      <td>1.000000</td>\n",
+       "      <td>15.000000</td>\n",
+       "      <td>146.000000</td>\n",
+       "      <td>10.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                 id       season       team1       team2  toss_winner  \\\n",
+       "count    756.000000   756.000000  756.000000  756.000000   756.000000   \n",
+       "mean    1792.178571  2013.444444    5.554233    5.604497     5.462963   \n",
+       "std     3464.478148     3.366895    3.389656    3.411850     3.361638   \n",
+       "min        1.000000  2008.000000    1.000000    1.000000     1.000000   \n",
+       "25%      189.750000  2011.000000    3.000000    3.000000     2.000000   \n",
+       "50%      378.500000  2013.000000    5.000000    5.000000     5.000000   \n",
+       "75%      567.250000  2016.000000    9.000000    8.000000     8.000000   \n",
+       "max    11415.000000  2019.000000   14.000000   14.000000    14.000000   \n",
+       "\n",
+       "       dl_applied      winner  win_by_runs  win_by_wickets  \n",
+       "count  756.000000  756.000000   756.000000      756.000000  \n",
+       "mean     0.025132    5.416667    13.283069        3.350529  \n",
+       "std      0.156630    3.421736    23.471144        3.387963  \n",
+       "min      0.000000    1.000000     0.000000        0.000000  \n",
+       "25%      0.000000    2.000000     0.000000        0.000000  \n",
+       "50%      0.000000    5.000000     0.000000        4.000000  \n",
+       "75%      0.000000    8.000000    19.000000        6.000000  \n",
+       "max      1.000000   15.000000   146.000000       10.000000  "
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#details of matches\n",
+    "df_matches = pd.DataFrame(matches)\n",
+    "df_matches.describe()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>season</th>\n",
+       "      <th>city</th>\n",
+       "      <th>date</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>toss_decision</th>\n",
+       "      <th>result</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "      <th>player_of_match</th>\n",
+       "      <th>venue</th>\n",
+       "      <th>umpire1</th>\n",
+       "      <th>umpire2</th>\n",
+       "      <th>umpire3</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Hyderabad</td>\n",
+       "      <td>2017-04-05</td>\n",
+       "      <td>10</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>35</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Yuvraj Singh</td>\n",
+       "      <td>Rajiv Gandhi International Stadium, Uppal</td>\n",
+       "      <td>AY Dandekar</td>\n",
+       "      <td>NJ Llong</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Pune</td>\n",
+       "      <td>2017-04-06</td>\n",
+       "      <td>1</td>\n",
+       "      <td>11</td>\n",
+       "      <td>11</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>SPD Smith</td>\n",
+       "      <td>Maharashtra Cricket Association Stadium</td>\n",
+       "      <td>A Nand Kishore</td>\n",
+       "      <td>S Ravi</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Rajkot</td>\n",
+       "      <td>2017-04-07</td>\n",
+       "      <td>8</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>CA Lynn</td>\n",
+       "      <td>Saurashtra Cricket Association Stadium</td>\n",
+       "      <td>Nitin Menon</td>\n",
+       "      <td>CK Nandan</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>3</td>\n",
+       "      <td>4</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Indore</td>\n",
+       "      <td>2017-04-08</td>\n",
+       "      <td>11</td>\n",
+       "      <td>9</td>\n",
+       "      <td>9</td>\n",
+       "      <td>field</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>GJ Maxwell</td>\n",
+       "      <td>Holkar Cricket Stadium</td>\n",
+       "      <td>AK Chaudhary</td>\n",
+       "      <td>C Shamshuddin</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>4</td>\n",
+       "      <td>5</td>\n",
+       "      <td>2017</td>\n",
+       "      <td>Bangalore</td>\n",
+       "      <td>2017-04-08</td>\n",
+       "      <td>3</td>\n",
+       "      <td>7</td>\n",
+       "      <td>3</td>\n",
+       "      <td>bat</td>\n",
+       "      <td>normal</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>15</td>\n",
+       "      <td>0</td>\n",
+       "      <td>KM Jadhav</td>\n",
+       "      <td>M Chinnaswamy Stadium</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   id  season       city        date  team1  team2  toss_winner toss_decision  \\\n",
+       "0   1    2017  Hyderabad  2017-04-05     10      3            3         field   \n",
+       "1   2    2017       Pune  2017-04-06      1     11           11         field   \n",
+       "2   3    2017     Rajkot  2017-04-07      8      2            2         field   \n",
+       "3   4    2017     Indore  2017-04-08     11      9            9         field   \n",
+       "4   5    2017  Bangalore  2017-04-08      3      7            3           bat   \n",
+       "\n",
+       "   result  dl_applied  winner  win_by_runs  win_by_wickets player_of_match  \\\n",
+       "0  normal           0      10           35               0    Yuvraj Singh   \n",
+       "1  normal           0      11            0               7       SPD Smith   \n",
+       "2  normal           0       2            0              10         CA Lynn   \n",
+       "3  normal           0       9            0               6      GJ Maxwell   \n",
+       "4  normal           0       3           15               0       KM Jadhav   \n",
+       "\n",
+       "                                       venue         umpire1        umpire2  \\\n",
+       "0  Rajiv Gandhi International Stadium, Uppal     AY Dandekar       NJ Llong   \n",
+       "1    Maharashtra Cricket Association Stadium  A Nand Kishore         S Ravi   \n",
+       "2     Saurashtra Cricket Association Stadium     Nitin Menon      CK Nandan   \n",
+       "3                     Holkar Cricket Stadium    AK Chaudhary  C Shamshuddin   \n",
+       "4                      M Chinnaswamy Stadium             NaN            NaN   \n",
+       "\n",
+       "  umpire3  \n",
+       "0     NaN  \n",
+       "1     NaN  \n",
+       "2     NaN  \n",
+       "3     NaN  \n",
+       "4     NaN  "
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df_matches.head(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Print the number of tosses and wins by each team"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "_cell_guid": "c6e07308-d14e-48f6-966e-b34a1aa26053",
+    "_uuid": "628c0dbd5a657da7f751f9e88dccb2a307102ad0"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "No of toss winners by each team\n",
+      "MI -> 98\n",
+      "KKR -> 92\n",
+      "CSK -> 89\n",
+      "KXIP -> 81\n",
+      "RCB -> 81\n",
+      "DD -> 80\n",
+      "RR -> 80\n",
+      "SRH -> 46\n",
+      "DC -> 43\n",
+      "PW -> 20\n",
+      "GL -> 15\n",
+      "RPS -> 13\n",
+      "DLC -> 10\n",
+      "KTK -> 8\n",
+      "No of match winners by each team\n",
+      "MI -> 109\n",
+      "CSK -> 100\n",
+      "KKR -> 92\n",
+      "RCB -> 84\n",
+      "KXIP -> 82\n",
+      "RR -> 75\n",
+      "DD -> 67\n",
+      "SRH -> 58\n",
+      "DC -> 29\n",
+      "RPS -> 15\n",
+      "GL -> 13\n",
+      "PW -> 12\n",
+      "DLC -> 10\n",
+      "KTK -> 6\n",
+      "Draw -> 4\n"
+     ]
+    }
+   ],
+   "source": [
+    "#store toss_winner in temp1 in sorted order of their frequencies\n",
+    "temp1 = df_matches['toss_winner'].value_counts(sort=True)\n",
+    "\n",
+    "#store winner in temp2 in sorted order of their freqencies\n",
+    "temp2 = df_matches['winner'].value_counts(sort=True)\n",
+    "\n",
+    "print('No of toss winners by each team')\n",
+    "\n",
+    "#print frequency of toss win of each team from temp1\n",
+    "for idx, val in temp1.iteritems():\n",
+    "   print('{} -> {}'.format(list(dicVal.keys())[list(dicVal.values()).index(idx)],val))\n",
+    "\n",
+    "print('No of match winners by each team')\n",
+    "\n",
+    "#print frequency of match win of each team from temp2 \n",
+    "for idx, val in temp2.iteritems():\n",
+    "   print('{} -> {}'.format(list(dicVal.keys())[list(dicVal.values()).index(idx)],val))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Find which team won the most matches using a histogram"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "_cell_guid": "65da1127-a7a1-437a-b7c7-c0106c7780a3",
+    "_uuid": "104a5b07ffe006951aeda1326c20ea934477cbb7"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.axes._subplots.AxesSubplot at 0x7f585aed8a50>"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "#shows that Mumbai won most matches followed by Chennai Super Kings\n",
+    "df_matches['winner'].hist(bins=40)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Represent the winner teams and toss winner teams using bar graph"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {
+    "_cell_guid": "2be0656b-0d94-49f5-801f-228f41fab11c",
+    "_uuid": "0840fba728809b1387abf191b0652741941b29e6"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Text(0.5, 1.0, 'Match winners')"
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 576x288 with 2 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "#bar graph for toss winners. count of toss wins Vs Team\n",
+    "fig = plt.figure(figsize=(8,4))\n",
+    "ax1 = fig.add_subplot(121)\n",
+    "ax1.set_xlabel('Team')\n",
+    "ax1.set_ylabel('Count of toss wins')\n",
+    "ax1.set_title(\"toss winners\")\n",
+    "temp1.plot(kind='bar')\n",
+    "\n",
+    "#bar graph for match winners. count of matches own Vs Team\n",
+    "ax2 = fig.add_subplot(122)\n",
+    "temp2.plot(kind = 'bar')\n",
+    "ax2.set_xlabel('Team')\n",
+    "ax2.set_ylabel('count of matches won')\n",
+    "ax2.set_title(\"Match winners\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Verify if any column has any more null values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {
+    "_cell_guid": "57b35b58-1b3b-4daa-be57-68bc0a622426",
+    "_uuid": "682eba17b4a5cddfe49b4da05161d34b4d36332d"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "id                   0\n",
+       "season               0\n",
+       "city                 0\n",
+       "date                 0\n",
+       "team1                0\n",
+       "team2                0\n",
+       "toss_winner          0\n",
+       "toss_decision        0\n",
+       "result               0\n",
+       "dl_applied           0\n",
+       "winner               0\n",
+       "win_by_runs          0\n",
+       "win_by_wickets       0\n",
+       "player_of_match      4\n",
+       "venue                0\n",
+       "umpire1              2\n",
+       "umpire2              2\n",
+       "umpire3            637\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#find the null values in every column\n",
+    "df_matches.apply(lambda x: sum(x.isnull()),axis=0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    ">Find the fraction of non-null values in \"umpire3\" columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Fraction of non-null values of umpire3 in the dataset = 0.03306878306878307\n"
+     ]
+    }
+   ],
+   "source": [
+    "n = (df_matches['umpire3'].nunique()) / df_matches.shape[0]\n",
+    "print(\"Fraction of non-null values of umpire3 in the dataset = \" + str(n))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> as the fraction of non-null values in \"umpire3\" is very low, we can drop \"umpire3\" assuming it won't greatly affect the machine learning model output further"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#drop umpire3\n",
+    "df_matches = df_matches.drop(columns = ['umpire3'])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Drop \"id\" and \"date\" column as \"id\" is redundant in the context of analytics and \"date\" is assumed to not be a key repeated attribute in the further test set that will be used to measure accuracy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#drop id and date\n",
+    "df_matches = df_matches.drop(columns = ['id', 'date'])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Find the datatypes of all columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "season              int64\n",
+       "city               object\n",
+       "team1               int64\n",
+       "team2               int64\n",
+       "toss_winner         int64\n",
+       "toss_decision      object\n",
+       "result             object\n",
+       "dl_applied          int64\n",
+       "winner              int64\n",
+       "win_by_runs         int64\n",
+       "win_by_wickets      int64\n",
+       "player_of_match    object\n",
+       "venue              object\n",
+       "umpire1            object\n",
+       "umpire2            object\n",
+       "dtype: object"
+      ]
+     },
+     "execution_count": 29,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#datatypes of columns\n",
+    "df_matches.dtypes"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Datatype of \"object\" type columns "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.series.Series'>\n",
+      "<class 'pandas.core.series.Series'>\n",
+      "<class 'pandas.core.series.Series'>\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(type(df_matches['player_of_match']))\n",
+    "print(type(df_matches['umpire1']))\n",
+    "print(type(df_matches['umpire2']))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Convert series into strings"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_matches['player_of_match'] = df_matches['player_of_match'].astype(str)\n",
+    "df_matches['umpire1'] = df_matches['umpire1'].astype(str)\n",
+    "df_matches['umpire2'] = df_matches['umpire2'].astype(str)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Now that all the columns are either strings, or integers, the strings can be encoded into integers using label encoding"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {
+    "_cell_guid": "d3f5ba9e-e7c5-4ef0-b2d4-38e5f1d13265",
+    "_uuid": "beec98d9a0c04713fa822cb787ad8fe9b4f6ce93"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "season             int64\n",
+       "city               int64\n",
+       "team1              int64\n",
+       "team2              int64\n",
+       "toss_winner        int64\n",
+       "toss_decision      int64\n",
+       "result             int64\n",
+       "dl_applied         int64\n",
+       "winner             int64\n",
+       "win_by_runs        int64\n",
+       "win_by_wickets     int64\n",
+       "player_of_match    int64\n",
+       "venue              int64\n",
+       "umpire1            int64\n",
+       "umpire2            int64\n",
+       "dtype: object"
+      ]
+     },
+     "execution_count": 32,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#label encode the string columns \n",
+    "var_mod = ['city', 'toss_decision', 'result', 'venue', 'player_of_match', 'umpire1', 'umpire2']\n",
+    "le = LabelEncoder()\n",
+    "for i in var_mod:\n",
+    "    df_matches[i] = le.fit_transform(df_matches[i])\n",
+    "df_matches.dtypes"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Reduce the season value between 0 and 12"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#reducing season years to integers in range 1 to 12\n",
+    "df_matches['season'] = df_matches['season'] - 2007"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>season</th>\n",
+       "      <th>city</th>\n",
+       "      <th>team1</th>\n",
+       "      <th>team2</th>\n",
+       "      <th>toss_winner</th>\n",
+       "      <th>toss_decision</th>\n",
+       "      <th>result</th>\n",
+       "      <th>dl_applied</th>\n",
+       "      <th>winner</th>\n",
+       "      <th>win_by_runs</th>\n",
+       "      <th>win_by_wickets</th>\n",
+       "      <th>player_of_match</th>\n",
+       "      <th>venue</th>\n",
+       "      <th>umpire1</th>\n",
+       "      <th>umpire2</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>15</td>\n",
+       "      <td>10</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>35</td>\n",
+       "      <td>0</td>\n",
+       "      <td>224</td>\n",
+       "      <td>28</td>\n",
+       "      <td>6</td>\n",
+       "      <td>34</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>1</td>\n",
+       "      <td>10</td>\n",
+       "      <td>27</td>\n",
+       "      <td>1</td>\n",
+       "      <td>11</td>\n",
+       "      <td>11</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>199</td>\n",
+       "      <td>21</td>\n",
+       "      <td>1</td>\n",
+       "      <td>49</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>2</td>\n",
+       "      <td>10</td>\n",
+       "      <td>29</td>\n",
+       "      <td>8</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "      <td>0</td>\n",
+       "      <td>10</td>\n",
+       "      <td>34</td>\n",
+       "      <td>31</td>\n",
+       "      <td>38</td>\n",
+       "      <td>16</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>3</td>\n",
+       "      <td>10</td>\n",
+       "      <td>16</td>\n",
+       "      <td>11</td>\n",
+       "      <td>9</td>\n",
+       "      <td>9</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>61</td>\n",
+       "      <td>13</td>\n",
+       "      <td>3</td>\n",
+       "      <td>14</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>4</td>\n",
+       "      <td>10</td>\n",
+       "      <td>2</td>\n",
+       "      <td>3</td>\n",
+       "      <td>7</td>\n",
+       "      <td>3</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>3</td>\n",
+       "      <td>15</td>\n",
+       "      <td>0</td>\n",
+       "      <td>99</td>\n",
+       "      <td>17</td>\n",
+       "      <td>61</td>\n",
+       "      <td>65</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>751</td>\n",
+       "      <td>12</td>\n",
+       "      <td>24</td>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>9</td>\n",
+       "      <td>64</td>\n",
+       "      <td>40</td>\n",
+       "      <td>36</td>\n",
+       "      <td>39</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>752</td>\n",
+       "      <td>12</td>\n",
+       "      <td>8</td>\n",
+       "      <td>5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>22</td>\n",
+       "      <td>18</td>\n",
+       "      <td>37</td>\n",
+       "      <td>38</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>753</td>\n",
+       "      <td>12</td>\n",
+       "      <td>32</td>\n",
+       "      <td>10</td>\n",
+       "      <td>14</td>\n",
+       "      <td>14</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>14</td>\n",
+       "      <td>0</td>\n",
+       "      <td>2</td>\n",
+       "      <td>170</td>\n",
+       "      <td>0</td>\n",
+       "      <td>61</td>\n",
+       "      <td>65</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>754</td>\n",
+       "      <td>12</td>\n",
+       "      <td>32</td>\n",
+       "      <td>14</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>5</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>55</td>\n",
+       "      <td>0</td>\n",
+       "      <td>55</td>\n",
+       "      <td>13</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <td>755</td>\n",
+       "      <td>12</td>\n",
+       "      <td>15</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>0</td>\n",
+       "      <td>85</td>\n",
+       "      <td>29</td>\n",
+       "      <td>38</td>\n",
+       "      <td>23</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>756 rows × 15 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "     season  city  team1  team2  toss_winner  toss_decision  result  \\\n",
+       "0        10    15     10      3            3              1       1   \n",
+       "1        10    27      1     11           11              1       1   \n",
+       "2        10    29      8      2            2              1       1   \n",
+       "3        10    16     11      9            9              1       1   \n",
+       "4        10     2      3      7            3              0       1   \n",
+       "..      ...   ...    ...    ...          ...            ...     ...   \n",
+       "751      12    24      2      1            1              1       1   \n",
+       "752      12     8      5      1            5              0       1   \n",
+       "753      12    32     10     14           14              1       1   \n",
+       "754      12    32     14      5            5              1       1   \n",
+       "755      12    15      1      5            1              0       1   \n",
+       "\n",
+       "     dl_applied  winner  win_by_runs  win_by_wickets  player_of_match  venue  \\\n",
+       "0             0      10           35               0              224     28   \n",
+       "1             0      11            0               7              199     21   \n",
+       "2             0       2            0              10               34     31   \n",
+       "3             0       9            0               6               61     13   \n",
+       "4             0       3           15               0               99     17   \n",
+       "..          ...     ...          ...             ...              ...    ...   \n",
+       "751           0       1            0               9               64     40   \n",
+       "752           0       1            0               6               22     18   \n",
+       "753           0      14            0               2              170      0   \n",
+       "754           0       5            0               6               55      0   \n",
+       "755           0       1            1               0               85     29   \n",
+       "\n",
+       "     umpire1  umpire2  \n",
+       "0          6       34  \n",
+       "1          1       49  \n",
+       "2         38       16  \n",
+       "3          3       14  \n",
+       "4         61       65  \n",
+       "..       ...      ...  \n",
+       "751       36       39  \n",
+       "752       37       38  \n",
+       "753       61       65  \n",
+       "754       55       13  \n",
+       "755       38       23  \n",
+       "\n",
+       "[756 rows x 15 columns]"
+      ]
+     },
+     "execution_count": 34,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df_matches"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Separate dependant and independant columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {
+    "_cell_guid": "534e353c-240d-44b9-a580-fa059e6e2827",
+    "_uuid": "8613122d2ed389eae87f248de0dfebc487293590"
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "RangeIndex(start=0, stop=756, step=1)\n",
+      "RangeIndex(start=0, stop=756, step=1)\n"
+     ]
+    }
+   ],
+   "source": [
+    "#X -> independant columns\n",
+    "#y -> dependant columns, i.e., \"winner\"\n",
+    "\n",
+    "X = df_matches.drop(columns = ['winner'])\n",
+    "print(X.index)\n",
+    "y = df_matches['winner']\n",
+    "print(y.index)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Split X and y into train and test sets"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 42)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Reindex the train, test distributions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "X_train = X_train.reindex()\n",
+    "X_test = X_test.reindex()\n",
+    "y_train = y_train.reindex()\n",
+    "y_test = y_test.reindex()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Print the reindexed indices for the train, test distributions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "X_train index : Int64Index([182, 575, 399, 583, 223, 375, 733, 713, 382, 601,\n",
+      "            ...\n",
+      "            466, 121, 614,  20, 700,  71, 106, 270, 435, 102],\n",
+      "           dtype='int64', length=529)\n",
+      "X_test index : Int64Index([408,  97, 424, 584, 603,  78,  54, 109, 323, 499,\n",
+      "            ...\n",
+      "             83,  61, 338, 451,  29, 595, 239, 250, 538, 494],\n",
+      "           dtype='int64', length=227)\n",
+      "y_train index : Int64Index([182, 575, 399, 583, 223, 375, 733, 713, 382, 601,\n",
+      "            ...\n",
+      "            466, 121, 614,  20, 700,  71, 106, 270, 435, 102],\n",
+      "           dtype='int64', length=529)\n",
+      "y_test index : Int64Index([408,  97, 424, 584, 603,  78,  54, 109, 323, 499,\n",
+      "            ...\n",
+      "             83,  61, 338, 451,  29, 595, 239, 250, 538, 494],\n",
+      "           dtype='int64', length=227)\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"X_train index : \" + str(X_train.index))\n",
+    "print(\"X_test index : \" + str(X_test.index))\n",
+    "print(\"y_train index : \" + str(y_train.index))\n",
+    "print(\"y_test index : \" + str(y_test.index))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Build Decision Tree Classifier with default hyperparameter values"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Build tree"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "t = tree.DecisionTreeClassifier()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Fit tree to train distribution of data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=None,\n",
+       "                       max_features=None, max_leaf_nodes=None,\n",
+       "                       min_impurity_decrease=0.0, min_impurity_split=None,\n",
+       "                       min_samples_leaf=1, min_samples_split=2,\n",
+       "                       min_weight_fraction_leaf=0.0, presort=False,\n",
+       "                       random_state=None, splitter='best')"
+      ]
+     },
+     "execution_count": 40,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "t.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Predict on test distribution of data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_pred = t.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Print train and test accuracies"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 42,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train Accuracy =  1.0\n",
+      "Train Accuracy =  0.762114537444934\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Train Accuracy = ', accuracy_score(y_train, t.predict(X_train)))\n",
+    "print('Train Accuracy = ', accuracy_score(y_test, t.predict(X_test)))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Build Random Forest Classifier with default hyperparameter values"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Build classifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#build rfc model\n",
+    "clf = rfc(n_estimators = 10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Fit model to train distribution of data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RandomForestClassifier(bootstrap=True, class_weight=None, criterion='gini',\n",
+       "                       max_depth=None, max_features='auto', max_leaf_nodes=None,\n",
+       "                       min_impurity_decrease=0.0, min_impurity_split=None,\n",
+       "                       min_samples_leaf=1, min_samples_split=2,\n",
+       "                       min_weight_fraction_leaf=0.0, n_estimators=10,\n",
+       "                       n_jobs=None, oob_score=False, random_state=None,\n",
+       "                       verbose=0, warm_start=False)"
+      ]
+     },
+     "execution_count": 44,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "clf.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Predict on test distribution"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_pred = clf.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Print train and test accuracies"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train Accuracy =  0.996219281663516\n",
+      "Test Accuracy =  0.6167400881057269\n"
+     ]
+    }
+   ],
+   "source": [
+    "print('Train Accuracy = ', accuracy_score(y_train, clf.predict(X_train)))\n",
+    "print('Test Accuracy = ', accuracy_score(y_test, y_pred))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Build XGBClassifier Model with default hyperparameter values"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    ">Build model and evaluate error"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0]\tvalidation_0-merror:0.08696\tvalidation_1-merror:0.21145\n",
+      "[1]\tvalidation_0-merror:0.04915\tvalidation_1-merror:0.20705\n",
+      "[2]\tvalidation_0-merror:0.04537\tvalidation_1-merror:0.18502\n",
+      "[3]\tvalidation_0-merror:0.02079\tvalidation_1-merror:0.18062\n",
+      "[4]\tvalidation_0-merror:0.01323\tvalidation_1-merror:0.15859\n",
+      "[5]\tvalidation_0-merror:0.00945\tvalidation_1-merror:0.16300\n",
+      "[6]\tvalidation_0-merror:0.00567\tvalidation_1-merror:0.15418\n",
+      "[7]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.13656\n",
+      "[8]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.13656\n",
+      "[9]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.13656\n",
+      "[10]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.11454\n",
+      "[11]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.10573\n",
+      "[12]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.11013\n",
+      "[13]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.11013\n",
+      "[14]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09692\n",
+      "[15]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[16]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[17]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[18]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09692\n",
+      "[19]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[20]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[21]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[22]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[23]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[24]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[25]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[26]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[27]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[28]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[29]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[30]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[31]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[32]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[33]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[34]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[35]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[36]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[37]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[38]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[39]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[40]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[41]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[42]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[43]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[44]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[45]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[46]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[47]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[48]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[49]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[50]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[51]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[52]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.09251\n",
+      "[53]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[54]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[55]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[56]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[57]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[58]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[59]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[60]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[61]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[62]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[63]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[64]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[65]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[66]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[67]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[68]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[69]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[70]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[71]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[72]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[73]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[74]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[75]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[76]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[77]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[78]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[79]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[80]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[81]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[82]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[83]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[84]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[85]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[86]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[87]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[88]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[89]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[90]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[91]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[92]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[93]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[94]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[95]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[96]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[97]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[98]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n",
+      "[99]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.08811\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "XGBClassifier(base_score=0.5, booster=None, colsample_bylevel=1,\n",
+       "              colsample_bynode=1, colsample_bytree=1, gamma=0, gpu_id=-1,\n",
+       "              importance_type='gain', interaction_constraints=None,\n",
+       "              learning_rate=0.300000012, max_delta_step=0, max_depth=6,\n",
+       "              min_child_weight=1, missing=nan, monotone_constraints=None,\n",
+       "              n_estimators=100, n_jobs=0, num_parallel_tree=1,\n",
+       "              objective='multi:softprob', random_state=0, reg_alpha=0,\n",
+       "              reg_lambda=1, scale_pos_weight=None, subsample=1,\n",
+       "              tree_method=None, validate_parameters=False, verbosity=None)"
+      ]
+     },
+     "execution_count": 47,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#fir model on training data with default parameter values\n",
+    "ev_set = [(X_train, y_train), (X_test, y_test)]\n",
+    "clf = xgb.XGBClassifier()\n",
+    "clf.fit(X_train, y_train, eval_metric = 'merror', verbose = True, eval_set = ev_set)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Predict for test data distribution"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y_pred = clf.predict(X_test)\n",
+    "predictions = [round(value) for value in y_pred]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Calculate Test accuracy"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train Accuracy = 100.00\n",
+      "Test Accuracy: 91.19\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.axes._subplots.AxesSubplot at 0x7f585a9747d0>"
+      ]
+     },
+     "execution_count": 49,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# evaluate predictions\n",
+    "accuracy = accuracy_score(y_test, predictions)\n",
+    "\n",
+    "#print features according to importances\n",
+    "print(\"Train Accuracy = %.2f\" % (accuracy_score(y_train, clf.predict(X_train)) * 100))\n",
+    "print(\"Test Accuracy: %.2f\" % (accuracy * 100.0))\n",
+    "xgb.plot_importance(clf)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Build XGBClassifier Model and Tune using hit-and-trial"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#drop \"umpire1', \"umpire2\", \"toss_decision\", \"result\", \"venue\", \"toss_winner\", \"city\", \"dl_applied\", \"season\"\n",
+    "X_train = X_train.drop(columns = ['umpire1', 'umpire2', 'toss_decision', 'result', 'venue', 'toss_winner', 'city', 'dl_applied', 'season'])\n",
+    "X_test = X_test.drop(columns = ['umpire1', 'umpire2', 'toss_decision', 'result', 'venue', 'toss_winner', 'city', 'dl_applied', 'season'])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Build and fit model on training data distribution"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0]\tvalidation_0-merror:0.04537\tvalidation_1-merror:0.10132\n",
+      "[1]\tvalidation_0-merror:0.03025\tvalidation_1-merror:0.08811\n",
+      "[2]\tvalidation_0-merror:0.01890\tvalidation_1-merror:0.07049\n",
+      "[3]\tvalidation_0-merror:0.00945\tvalidation_1-merror:0.06167\n",
+      "[4]\tvalidation_0-merror:0.00945\tvalidation_1-merror:0.06167\n",
+      "[5]\tvalidation_0-merror:0.00756\tvalidation_1-merror:0.04846\n",
+      "[6]\tvalidation_0-merror:0.00378\tvalidation_1-merror:0.04405\n",
+      "[7]\tvalidation_0-merror:0.00378\tvalidation_1-merror:0.04405\n",
+      "[8]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[9]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[10]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[11]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[12]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.04405\n",
+      "[13]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.04405\n",
+      "[14]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.04405\n",
+      "[15]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.04405\n",
+      "[16]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[17]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[18]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[19]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.04405\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "XGBClassifier(base_score=0.5, booster=None, colsample_bylevel=1,\n",
+       "              colsample_bynode=1, colsample_bytree=1, eval_metric='error',\n",
+       "              gamma=0, gpu_id=-1, importance_type='gain',\n",
+       "              interaction_constraints=None, learning_rate=0.36,\n",
+       "              max_delta_step=0, max_depth=10, min_child_weight=1, missing=nan,\n",
+       "              monotone_constraints=None, n_estimators=20, n_jobs=-1,\n",
+       "              num_parallel_tree=1, objective='multi:softprob', random_state=0,\n",
+       "              reg_alpha=0, reg_lambda=1, scale_pos_weight=None, subsample=1,\n",
+       "              tree_method=None, validate_parameters=False, verbosity=None)"
+      ]
+     },
+     "execution_count": 51,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# fit model on training data\n",
+    "ev_set = [(X_train, y_train), (X_test, y_test)]\n",
+    "model = xgb.XGBClassifier(learning_rate = 0.36, max_depth = 10, min_child_weight = 1, n_estimators = 20, random_state = 0, n_jobs = -1, eval_metric = 'error')\n",
+    "model.fit(X_train, y_train, eval_set = ev_set, eval_metric = 'merror', verbose = True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Make precitions of model on test set"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# make predictions for test data\n",
+    "y_pred = model.predict(X_test)\n",
+    "predictions = [round(value) for value in y_pred]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Evaluate accuracy score by comparing test and predicted values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Test Accuracy = 1.00\n",
+      "Test Accuracy = 95.59\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.axes._subplots.AxesSubplot at 0x7f58580bee90>"
+      ]
+     },
+     "execution_count": 53,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# evaluate predictions\n",
+    "accuracy = accuracy_score(y_test, predictions)\n",
+    "print(\"Test Accuracy = %.2f\" % (accuracy_score(y_train, model.predict(X_train))))\n",
+    "print(\"Test Accuracy = %.2f\" % (accuracy * 100.0))\n",
+    "xgb.plot_importance(model)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Tune Hyperparameters for XGBClassifier using GridSearchCV"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Search hyperparameter values"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 54,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/vedantkp/anaconda3/lib/python3.7/site-packages/sklearn/model_selection/_search.py:814: DeprecationWarning: The default of the `iid` parameter will change from True to False in version 0.22 and will be removed in 0.24. This will change numeric results when test-set sizes are unequal.\n",
+      "  DeprecationWarning)\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "GridSearchCV(cv=3, error_score='raise-deprecating',\n",
+       "             estimator=XGBClassifier(base_score=None, booster=None,\n",
+       "                                     colsample_bylevel=None,\n",
+       "                                     colsample_bynode=None,\n",
+       "                                     colsample_bytree=None, gamma=None,\n",
+       "                                     gpu_id=None, importance_type='gain',\n",
+       "                                     interaction_constraints=None,\n",
+       "                                     learning_rate=None, max_delta_step=None,\n",
+       "                                     max_depth=None, min_child_weight=None,\n",
+       "                                     missing=nan, monotone_constrai...\n",
+       "                                     reg_lambda=None, scale_pos_weight=None,\n",
+       "                                     subsample=None, tree_method=None,\n",
+       "                                     validate_parameters=False,\n",
+       "                                     verbosity=None),\n",
+       "             iid='warn', n_jobs=None,\n",
+       "             param_grid={'learning_rate': [0.36, 0.38, 0.4, 0.5, 1],\n",
+       "                         'max_depth': [10, 15, 20, 25], 'min_child_weight': [1],\n",
+       "                         'n_estimators': [20, 30, 100], 'n_jobs': [-1]},\n",
+       "             pre_dispatch='2*n_jobs', refit=True, return_train_score=False,\n",
+       "             scoring=None, verbose=0)"
+      ]
+     },
+     "execution_count": 54,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#make a dictionary of parameters and their values to tested\n",
+    "#92.43\n",
+    "param_grid = {'max_depth': [10, 15, 20, 25], \n",
+    "              'n_estimators': [20, 30, 100], \n",
+    "              'learning_rate': [0.36, 0.38, 0.4, 0.5, 1],\n",
+    "              'min_child_weight':[1],\n",
+    "              'n_jobs':[-1]\n",
+    "             }\n",
+    "\n",
+    "#build xgbClassifier\n",
+    "clf = xgb.XGBClassifier()\n",
+    "\n",
+    "#pass the model to gridsearch to search for parameters\n",
+    "grid_search = GridSearchCV(clf, param_grid, cv = 3, refit = True)\n",
+    "\n",
+    "#fit the train data to gridsearch object \n",
+    "grid_search.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Print the best parameters and best score corresponding to the best parameters"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Best parameters: {'learning_rate': 0.36, 'max_depth': 10, 'min_child_weight': 1, 'n_estimators': 30, 'n_jobs': -1}\n",
+      "Best estimator: XGBClassifier(base_score=0.5, booster=None, colsample_bylevel=1,\n",
+      "              colsample_bynode=1, colsample_bytree=1, gamma=0, gpu_id=-1,\n",
+      "              importance_type='gain', interaction_constraints=None,\n",
+      "              learning_rate=0.36, max_delta_step=0, max_depth=10,\n",
+      "              min_child_weight=1, missing=nan, monotone_constraints=None,\n",
+      "              n_estimators=30, n_jobs=-1, num_parallel_tree=1,\n",
+      "              objective='multi:softprob', random_state=0, reg_alpha=0,\n",
+      "              reg_lambda=1, scale_pos_weight=None, subsample=1,\n",
+      "              tree_method=None, validate_parameters=False, verbosity=None)\n",
+      "Best score: 0.945179584120983\n"
+     ]
+    }
+   ],
+   "source": [
+    "print ('Best parameters:', grid_search.best_params_)\n",
+    "print ('Best estimator:', grid_search.best_estimator_)\n",
+    "print ('Best score:', grid_search.best_score_)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "> Build the model again using the hyperparameter values obtained in the search"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[0]\tvalidation_0-merror:0.04537\tvalidation_1-merror:0.10132\n",
+      "[1]\tvalidation_0-merror:0.02836\tvalidation_1-merror:0.08811\n",
+      "[2]\tvalidation_0-merror:0.01890\tvalidation_1-merror:0.07049\n",
+      "[3]\tvalidation_0-merror:0.01323\tvalidation_1-merror:0.06167\n",
+      "[4]\tvalidation_0-merror:0.00945\tvalidation_1-merror:0.04846\n",
+      "[5]\tvalidation_0-merror:0.00756\tvalidation_1-merror:0.04405\n",
+      "[6]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[7]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[8]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[9]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[10]\tvalidation_0-merror:0.00189\tvalidation_1-merror:0.03965\n",
+      "[11]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[12]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[13]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[14]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[15]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[16]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[17]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[18]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n",
+      "[19]\tvalidation_0-merror:0.00000\tvalidation_1-merror:0.03965\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "XGBClassifier(base_score=0.5, booster=None, colsample_bylevel=1,\n",
+       "              colsample_bynode=1, colsample_bytree=1, gamma=0, gpu_id=-1,\n",
+       "              importance_type='gain', interaction_constraints=None,\n",
+       "              learning_rate=0.4, max_delta_step=0, max_depth=10,\n",
+       "              min_child_weight=1, missing=nan, monotone_constraints=None,\n",
+       "              n_estimators=20, n_jobs=-1, num_parallel_tree=1,\n",
+       "              objective='multi:softprob', random_state=0, reg_alpha=0,\n",
+       "              reg_lambda=1, scale_pos_weight=None, subsample=1,\n",
+       "              tree_method=None, validate_parameters=False, verbosity=None)"
+      ]
+     },
+     "execution_count": 56,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#fit the model with the best parameter values obtained\n",
+    "ev_set = [(X_train, y_train), (X_test, y_test)]\n",
+    "#model.fit(X_train.drop(columns = ['umpire1', 'umpire2', 'toss_decision', 'result', 'venue', 'toss_winner', 'city','dl_applied', 'season']), y_train, eval_metric = \"merror\", eval_set = ev_set, verbose = True)\n",
+    "clf = xgb.XGBClassifier(learning_rate = 0.4, max_depth = 10, min_child_weight = 1, n_estimators = 20, n_jobs = -1)\n",
+    "clf.fit(X_train, y_train, eval_metric = 'merror', eval_set = ev_set, verbose = True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# make predictions for test data on tuned model\n",
+    "y_pred = clf.predict(X_test)\n",
+    "predictions = [round(value) for value in y_pred]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 58,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train Accuracy = 100.00\n",
+      "Test Accuracy = 96.04\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<matplotlib.axes._subplots.AxesSubplot at 0x7f5858044e10>"
+      ]
+     },
+     "execution_count": 58,
+     "metadata": {},
+     "output_type": "execute_result"
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# evaluate predictions\n",
+    "accuracy = accuracy_score(y_test, predictions)\n",
+    "print(\"Train Accuracy = %.2f\" % (accuracy_score(y_train, clf.predict(X_train)) * 100))\n",
+    "print(\"Test Accuracy = %.2f\" % (accuracy * 100.0))\n",
+    "xgb.plot_importance(clf)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

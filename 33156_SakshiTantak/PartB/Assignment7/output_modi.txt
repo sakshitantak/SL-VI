@@ -1,0 +1,82 @@
+> # Load
+> library("tm")
+Loading required package: NLP
+
+Attaching package: ‘NLP’
+
+The following object is masked from ‘package:ggplot2’:
+
+    annotate
+
+> library("SnowballC")
+> library("wordcloud")
+Loading required package: RColorBrewer
+> library("RColorBrewer")
+> library("wordcloud2")
+> library("readtext")
+> text <- readtext("NarendraModi.txt")
+> View(text)
+> #Load the data as a corpus
+> docs <- Corpus(VectorSource(text))
+> #Inspect the content of the document
+> inspect(docs)
+<<SimpleCorpus>>
+Metadata:  corpus specific: 1, document level (indexed): 0
+Content:  documents: 1
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           NarendraModi.txt 
+Narendra Damodardas Modi (Gujarati: ['n??e?nd?r? d?a?mo?d???'d?a?s 'mo?d?i?] (About this sound listen); born 17 September 1950) is an Indian politician who is the 16th and current Prime Minister of India, in office since May 2014. He was the Chief Minister of Gujarat from 2001 to 2014, and is the Member of Parliament for Varanasi. Modi, a member of the Bharatiya Janata Party (BJP), is a Hindu nationalist and member of the right-wing Rashtriya Swayamsevak Sangh (RSS).\n\nBorn to a Gujarati family in Vadnagar, Modi helped his father sell tea as a child, and later ran his own stall. He was introduced to the RSS at the age of eight, beginning a long association with the organisation. He left home after graduating from school, partly because of an arranged marriage which he rejected. Modi travelled around India for two years, and visited a number of religious centres. He returned to Gujarat and moved to Ahmedabad in 1969 or 1970. In 1971 he became a full-time worker for the RSS. During the state of emergency imposed across the country in 1975, Modi was forced to go into hiding. The RSS assigned him to the BJP in 1985, and he held several positions within the party hierarchy until 2001, rising to the rank of general secretary.\n\nModi was appointed Chief Minister of Gujarat in 2001, due to Keshubhai Patel's failing health and poor public image following the earthquake in Bhuj. Modi was elected to the legislative assembly soon after. His administration has been considered complicit in the 2002 Gujarat riots,[a] or otherwise criticised for its handling of it, although a court found no evidence to prosecute Modi.[b] His policies as chief minister, credited with encouraging economic growth, have received praise.[8] His administration has been criticised for failing to significantly improve health, poverty, and education indices in the state.[c]\n\nModi led the BJP in the 2014 general election, which gave the party a majority in the Lok Sabha, the first time a single party had achieved this since 1984. Modi himself was elected to parliament from Varanasi. Since taking office, Modi's administration has tried to raise foreign direct investment in the Indian economy, increased spending on infrastructure, and reduced spending on healthcare and social welfare programmes. Modi has attempted to improve efficiency in the bureaucracy, and centralised power by abolishing the planning commission and replacing it with the NITI Aayog. He has begun a high-profile sanitation campaign, and weakened or abolished environmental and labour laws. Credited with engineering a political realignment towards right-wing politics, Modi remains a figure of controversy domestically and internationally over his Hindu nationalist beliefs and his role during the 2002 Gujarat riots, cited as evidence of an exclusionary social agenda.[d] 
+> #Text transformation
+> toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+> doc_ids <- c(1)
+> df <- data.frame(doc_id = doc_ids, text = text, stringsAsFactors = FALSE)
+> df_corpus <- Corpus(DataframeSource(df))
+> # Convert the text to lower case
+> docs <- tm_map(docs, content_transformer(tolower))
+> # Remove numbers
+> docs <- tm_map(docs, removeNumbers)
+> # Remove english common stopwords
+> docs <- tm_map(docs, removeWords, stopwords("english"))
+> # Remove your own stop word
+> # specify your stopwords as a character vector
+> docs <- tm_map(docs, removeWords, c("blabla1", "blabla2")) 
+> # Remove punctuations
+> docs <- tm_map(docs, removePunctuation)
+> # Eliminate extra white spaces
+> docs <- tm_map(docs, stripWhitespace)
+> #Build a term-document matrix
+> dtm <- TermDocumentMatrix(docs)
+> m <- as.matrix(dtm)
+> v <- sort(rowSums(m),decreasing=TRUE)
+> d <- data.frame(word = names(v),freq=v)
+> head(d, 10)
+                         word freq
+modi                     modi   11
+gujarat               gujarat    5
+minister             minister    4
+party                   party    4
+rss                       rss    4
+administration administration    3
+bjp                       bjp    3
+chief                   chief    3
+member                 member    3
+since                   since    3
+> #Generate the Word cloud
+> set.seed(1234)
+> wordcloud(words = d$word, freq = d$freq, min.freq = 1,
++           max.words=200, random.order=TRUE, rot.per=0.35, 
++           colors=brewer.pal(8, "Dark2"))
+There were 50 or more warnings (use warnings() to see the first 50)
+> #Plot word frequencies
+> barplot(d[1:10,]$freq, las = 2, names.arg = d[1:10,]$word,
++         col ="lightblue", main ="Most frequent words",
++         ylab = "Word frequencies")
+> 
+> 
+> #Generate the Word cloud
+> set.seed(1234)
+> wordcloud(words = d$word, freq = d$freq, min.freq = 1,
++           max.words=200, random.order=TRUE, rot.per=0.35, 
++           colors=brewer.pal(8, "Dark2"))
+There were 50 or more warnings (use warnings() to see the first 50)
+> text

@@ -1,0 +1,51 @@
+#start hadoop
+start-all.sh
+
+#verify nodes
+jps
+
+#stop hadoop
+stop-all.sh
+
+#start hive
+hive
+
+#to see databases
+show databases;
+
+#create db
+CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.] table_name
+
+[(col_name data_type [COMMENT col_comment], ...)]
+[COMMENT table_comment]
+[ROW FORMAT row_format]
+[STORED AS file_format]
+
+#drop db
+DROP DATABASE IF EXISTS userdb;
+
+#create table
+CREATE TABLE <TABLE_NAME> (<VARIABLE_NAME> <DATATYPE>);
+NOTE : data types are same as sql
+
+#rename table
+ALTER TABLE <TABLE_NAME> RENAME TO <NEW_NAME>
+
+#add columns
+ALTER TABLE <TABLE_NAME> ADD COLUMNS (<COLUMNS_NAME> <DATA_TYPE>);
+
+#describe table
+DESCRIBE <TABLE_NAME>
+
+#replace columns
+NOTE : when you replace columns in the table, the old columns are discraded and new columns overwrite them, but the data types of corresponding indices columns of new and old columns MUST be the same
+ALTER TABLE <TABLE_NAME> REPLACE COLUMNS(<COLUMN_NAME> <DATA_TYPE>);
+
+#drop table
+DROP TABLE [IF EXISTS] <TABLE_NAME>
+
+#load data directly
+LOAD DATA LOCAL INPATH <PATH> OVERWRITE INTO TABLE <TABLE_NAME>
+
+
+

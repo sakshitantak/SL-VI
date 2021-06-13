@@ -1,0 +1,94 @@
+1.CREATE TABLE -
+	create ‘<table name>’,’<column family>’ 
+
+2.LIST TABLE-
+	list
+
+3.DISABLING A TABLE-
+	disable ‘table name’
+
+4.TO FIND WHETHER A TABLE IS DISABLED-
+	is_disabled 'table name'
+
+5.TO DISABLE ALL THE TABLES MATCHING THE GIVEN REGEX-
+	disable_all 'r.*'		//TABLE NAME STARTING WITH r
+
+6.ENABLING A TABLE-
+	enable ‘table name’
+
+7.TO FIND WHETHER A TABLE IS ENABLED-
+	is_enabled 'table name'
+
+8.DESCIRBE A TABLE-
+	describe 'table name'
+
+9.CHANGING THE MAXIMUM NUMBER OF CELLS OF A COLUMN FAMILY-
+	alter 't1', NAME ⇒ 'f1', VERSIONS ⇒ 5
+
+10.TABLE SCOPE OPERATORS-
+	Using alter, you can set and remove table scope operators such as MAX_FILESIZE, READONLY, MEMSTORE_FLUSHSIZE, DEFERRED_LOG_FLUSH, etc
+
+11.SETTING READ ONLY-
+	alter 't1', READONLY(option)
+
+12.REMOVING TABLE SCOPE OPERATORS-
+	alter 't1', METHOD ⇒ 'table_att_unset', NAME ⇒ 'MAX_FILESIZE'
+
+13.DELETING A COLUMN FAMILY-
+	alter ‘ table name ’, ‘delete’ ⇒ ‘ column family ’ 
+
+14.VERIFY THE EXISTENCE OF A TABLE-
+	exists 'table name'
+
+15.DELETE A TABLE-
+	drop 'emp'
+
+16.DROP THE TABLES MATCHING THE “REGEX”-
+	drop_all ‘t.*’			//TABLE NAME STARTING WITH t
+
+17.EXIT THE SHELL-
+	exit
+
+18.STOPPING HBASE-
+	stop-hbase.sh
+
+19.INSERT ROWS INTO A TABLE-
+	put ’<table name>’,’row1’,’<colfamily:colname>’,’<value>’
+
+20.UPDATING DATA-
+	put ‘table name’,’row ’,'Column family:column name',’new value’
+
+21.READING DATA-
+	get ’<table name>’,’row1’
+
+22.READING A SPECIFIC COLUMN-
+	get 'table name', ‘rowid’, {COLUMN ⇒ ‘column family:column name ’}
+
+23.DELETING A SPECIFIC CELL IN A TABLE-
+	delete ‘<table name>’, ‘<row>’, ‘<column name >’, ‘<time stamp>’
+
+24.DELETING ALL CELLS IN A TABLE-
+	deleteall ‘<table name>’, ‘<row>’,
+
+25.VIEW THE DATA IN HTABLE-
+	scan ‘<table name>’ 
+
+26.COUNT THE NUMBER OF ROWS OF A TABLE-
+	count ‘<table name>’ 
+
+27.DROPS AND RECREATES A TABLE-
+	truncate 'table name'
+
+28.GRANTS SPECIFIC RIGHTS-
+	grant <user> <permissions> [<table> [<column family> [<column; qualifier>]]
+		R - represents read privilege.
+		W - represents write privilege.
+		X - represents execute privilege.
+		C - represents create privilege.
+		A - represents admin privilege.
+
+29.REVOKE A USER'S ACCESS RIGHTS-
+	revoke <user>
+
+30.LIST ALL THE PERMISSIONS FOR A PARTICULAR TABLE-
+	user_permission ‘tablename’

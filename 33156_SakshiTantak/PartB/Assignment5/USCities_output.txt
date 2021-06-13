@@ -1,0 +1,210 @@
+>#readr for reading rectangular data such as csv,tsv etc.
+> library(readr)
+> population <- read_csv("bigcity.csv")
+Parsed with column specification:
+cols(
+  X1 = col_double(),
+  u = col_double(),
+  x = col_double()
+)
+Warning message:
+Missing column names filled in: 'X1' [1] 
+> head(population)
+# A tibble: 6 x 3
+     X1     u     x
+  <dbl> <dbl> <dbl>
+1     1   138   143
+2     2    93   104
+3     3    61    69
+4     4   179   260
+5     5    48    75
+6     6    37    63
+> # select variables 
+> myvars <- c("u", "x")
+> # select variables 
+> myvars <- c("u", "x")
+> new_data <- population[myvars] 
+> new_data
+# A tibble: 49 x 2
+       u     x
+   <dbl> <dbl>
+ 1   138   143
+ 2    93   104
+ 3    61    69
+ 4   179   260
+ 5    48    75
+ 6    37    63
+ 7    29    50
+ 8    23    48
+ 9    30   111
+10     2    50
+# … with 39 more rows
+>  var1 <- population[c(1)]
+> var1
+# A tibble: 49 x 1
+      X1
+   <dbl>
+ 1     1
+ 2     2
+ 3     3
+ 4     4
+ 5     5
+ 6     6
+ 7     7
+ 8     8
+ 9     9
+10    10
+# … with 39 more rows
+> var2 <- subset(population,u>100)
+> var2
+# A tibble: 14 x 3
+      X1     u     x
+   <dbl> <dbl> <dbl>
+ 1     1   138   143
+ 2     4   179   260
+ 3    15   298   317
+ 4    19   381   464
+ 5    20   387   459
+ 6    23   507   634
+ 7    28   136   139
+ 8    29   243   291
+ 9    30   256   288
+10    35   120   115
+11    36   172   183
+12    39   121   113
+13    44   116   130
+14    48   161   232
+> > #merge data
+> m1 <- population[c(1)]
+> m2 <- population[c(2)]
+> m3 <- merge(m1,m2)
+> View(m3)
+> m3
+    X1   u
+1    1 138
+2    2 138
+3    3 138
+4    4 138
+5    5 138
+6    6 138
+7    7 138
+8    8 138
+9    9 138
+10  10 138
+11  11 138
+12  12 138
+13  13 138
+14  14 138
+15  15 138
+16  16 138
+17  17 138
+18  18 138
+19  19 138
+20  20 138
+21  21 138
+22  22 138
+23  23 138
+24  24 138
+25  25 138
+26  26 138
+27  27 138
+28  28 138
+29  29 138
+30  30 138
+31  31 138
+32  32 138
+33  33 138
+34  34 138
+35  35 138
+36  36 138
+37  37 138
+38  38 138
+39  39 138
+40  40 138
+41  41 138
+42  42 138
+43  43 138
+44  44 138
+45  45 138
+46  46 138
+47  47 138
+48  48 138
+49  49 138
+50   1  93
+ [ reached 'max' / getOption("max.print") -- omitted 1901 rows ]
+> #sort data
+> s1 <- population[order(population$x),]
+> s2 <- population[order(population$x, -population$u),]
+> s1
+# A tibble: 49 x 3
+      X1     u     x
+   <dbl> <dbl> <dbl>
+ 1    32    36    46
+ 2     8    23    48
+ 3     7    29    50
+ 4    10     2    50
+ 5    47    43    50
+ 6    11    38    52
+ 7    12    46    53
+ 8    33    45    53
+ 9    49    36    54
+10    14    25    57
+# … with 39 more rows
+> s2 <- population[order(population$x, -population$u),]
+> s2
+# A tibble: 49 x 3
+      X1     u     x
+   <dbl> <dbl> <dbl>
+ 1    32    36    46
+ 2     8    23    48
+ 3    47    43    50
+ 4     7    29    50
+ 5    10     2    50
+ 6    11    38    52
+ 7    12    46    53
+ 8    33    45    53
+ 9    49    36    54
+10    22    60    57
+# … with 39 more rows
+> # Transposing Data (reversing rows and columns)
+> temp <- population[1:2]
+> temp
+# A tibble: 49 x 2
+      X1     u
+   <dbl> <dbl>
+ 1     1   138
+ 2     2    93
+ 3     3    61
+ 4     4   179
+ 5     5    48
+ 6     6    37
+ 7     7    29
+ 8     8    23
+ 9     9    30
+10    10     2
+# … with 39 more rows
+> t(temp)
+   [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12] [,13] [,14] [,15]
+X1    1    2    3    4    5    6    7    8    9    10    11    12    13    14    15
+u   138   93   61  179   48   37   29   23   30     2    38    46    71    25   298
+   [,16] [,17] [,18] [,19] [,20] [,21] [,22] [,23] [,24] [,25] [,26] [,27] [,28]
+X1    16    17    18    19    20    21    22    23    24    25    26    27    28
+u     74    50    76   381   387    78    60   507    50    77    64    40   136
+   [,29] [,30] [,31] [,32] [,33] [,34] [,35] [,36] [,37] [,38] [,39] [,40] [,41]
+X1    29    30    31    32    33    34    35    36    37    38    39    40    41
+u    243   256    94    36    45    67   120   172    66    46   121    44    64
+   [,42] [,43] [,44] [,45] [,46] [,47] [,48] [,49]
+X1    42    43    44    45    46    47    48    49
+u     56    40   116    87    43    43   161    36
+> # Melting Data to long format
+> library(reshape2)
+> # Melt, i.e. each row is a unique ID-variable combination
+> m1 <- melt('x', id <-  c("u"))
+> m2 <- m1 # Extra variable
+> head(m1)
+  value
+1     x
+> tail(m1)
+  value
+1     x
+>  

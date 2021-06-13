@@ -1,0 +1,136 @@
+> #readr for reading rectangular data such as csv,tsv etc.
+> library(readr)
+> dataset <- read_csv("AirQualityUCI.csv")
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  Date = col_character(),
+  Time = col_character()
+)
+See spec(...) for full column specifications.
+> View(dataset)
+> class(heart_data$thal)
+> #INITIAL EXPLORATORY ANALYSIS
+> class(dataset)
+[1] "spec_tbl_df" "tbl_df"      "tbl"         "data.frame" 
+> dim(dataset)
+[1] 9357   20
+> summary(dataset)
+     Date               Time               CO(GT)       
+ Length:9357        Length:9357        Min.   :-200.00  
+ Class :character   Class :character   1st Qu.:   0.00  
+ Mode  :character   Mode  :character   Median :   1.00  
+                                       Mean   : -34.58  
+                                       3rd Qu.:   2.00  
+                                       Max.   :  11.00  
+                                                        
+  PT08.S1(CO)        NMHC(GT)         C6H6(GT)     
+ Min.   :-200.0   Min.   :-200.0   Min.   :-200.0  
+ 1st Qu.:   3.0   1st Qu.:  39.0   1st Qu.:-200.0  
+ Median :   6.0   Median : 981.0   Median :-200.0  
+ Mean   : 240.8   Mean   : 771.2   Mean   :-117.5  
+ 3rd Qu.:   9.0   3rd Qu.:1171.0   3rd Qu.:   4.0  
+ Max.   :2040.0   Max.   :2008.0   Max.   :1189.0  
+                                                   
+ PT08.S2(NMHC)         NOx(GT)        PT08.S3(NOx)   
+ Min.   :-200.000   Min.   :-200.0   Min.   :-200.0  
+ 1st Qu.:   3.000   1st Qu.:   2.0   1st Qu.: 383.0  
+ Median :   6.000   Median :   6.0   Median : 791.0  
+ Mean   :   1.601   Mean   : 210.2   Mean   : 678.4  
+ 3rd Qu.:  11.000   3rd Qu.:   9.0   3rd Qu.:1040.0  
+ Max.   :  63.000   Max.   :1889.0   Max.   :2214.0  
+                                                     
+    NO2(GT)        PT08.S4(NO2)     PT08.S5(O3)    
+ Min.   :-200.0   Min.   :-200.0   Min.   :-200.0  
+ 1st Qu.: 110.0   1st Qu.: 145.0   1st Qu.:  84.0  
+ Median : 247.0   Median : 695.0   Median : 124.0  
+ Mean   : 365.9   Mean   : 589.6   Mean   : 416.9  
+ 3rd Qu.: 600.0   3rd Qu.: 891.0   3rd Qu.: 212.0  
+ Max.   :2331.0   Max.   :2683.0   Max.   :2684.0  
+                                                   
+       T              RH               AH          
+ Min.   :-200   Min.   :-200.0   Min.   :-200.000  
+ 1st Qu.: 967   1st Qu.:  35.0   1st Qu.:   6.000  
+ Median :1312   Median : 816.0   Median :  12.000  
+ Mean   :1265   Mean   : 763.9   Mean   :   5.715  
+ 3rd Qu.:1595   3rd Qu.:1177.0   3rd Qu.:  20.000  
+ Max.   :2775   Max.   :2523.0   Max.   :  44.000  
+                                                   
+       R1                 R2                R3       
+ Min.   :-200.000   Min.   :-200.00   Min.   :0.000  
+ 1st Qu.:   2.000   1st Qu.:   9.00   1st Qu.:1.000  
+ Median :   6.000   Median :  40.00   Median :3.000  
+ Mean   :   6.279   Mean   :  30.77   Mean   :3.679  
+ 3rd Qu.:   9.000   3rd Qu.:  57.00   3rd Qu.:6.000  
+ Max.   :  87.000   Max.   :  88.00   Max.   :9.000  
+                    NA's   :61        NA's   :366    
+       R4             R5      
+ Min.   :   0   Min.   :   3  
+ 1st Qu.:   0   1st Qu.:2990  
+ Median :   1   Median :5341  
+ Mean   :1207   Mean   :5245  
+ 3rd Qu.:   1   3rd Qu.:7684  
+ Max.   :9996   Max.   :9998  
+ NA's   :366    NA's   :2442  
+> #REMOVING OUTLIERS
+> vec1 <- boxplot.stats(dataset$`CO(GT)`)$out
+> dataset$`CO(GT)`[dataset$`CO(GT)`%in%vec1] <- median(dataset$`CO(GT)`)
+> #CHECKING FOR MISSING VALUES
+> any(is.na(dataset))
+[1] TRUE
+> sum(is.na(dataset))
+[1] 3235
+> any(is.na(dataset$`CO(GT)`))
+[1] FALSE
+> #CHECKING FOR DATA TYPES
+> class(dataset$`CO(GT)`)
+[1] "numeric"
+> #CHANGING FOR DATA TYPES
+> class(dataset$`CO(GT)`)
+[1] "numeric"
+> dataset$`CO(GT)` <- as.character(dataset$`CO(GT)`)
+> class(dataset$`CO(GT)`)
+[1] "character"
+> #TRIMING WHITE SPACES
+> library(stringr)
+> dataset$`CO(GT)` <- str_trim(dataset$`CO(GT)`)
+> #REPLACING NOT PROVIDED WITH NOT AVAILABLE
+> dataset$`CO(GT)` <- str_replace(dataset$`CO(GT)`,"Not Provided","NA")
+> #REMOVING OUTLIERS
+> vec1 <- boxplot.stats(dataset$`CO(GT)`)$out
+Error in x[floor(d)] + x[ceiling(d)] : 
+  non-numeric argument to binary operator
+> dataset$`CO(GT)`[dataset$`CO(GT)`%in%vec1] <- median(dataset$`CO(GT)`)
+> #/////////////////DATA MODEL BUILDING/////////////////
+> linearMod <- lm(dataset$`NOx(GT)` ~ dataset$`NO2(GT)`, data=dataset) 
+> print(linearMod)
+
+Call:
+lm(formula = dataset$`NOx(GT)` ~ dataset$`NO2(GT)`, data = dataset)
+
+Coefficients:
+      (Intercept)  dataset$`NO2(GT)`  
+         -56.4765             0.7287  
+
+> summary(linearMod)
+
+Call:
+lm(formula = dataset$`NOx(GT)` ~ dataset$`NO2(GT)`, data = dataset)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-1172.09  -149.84   -40.81    33.97  1697.72 
+
+Coefficients:
+                    Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       -56.476502   4.748751  -11.89   <2e-16 ***
+dataset$`NO2(GT)`   0.728686   0.009358   77.86   <2e-16 ***
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 318.2 on 9355 degrees of freedom
+Multiple R-squared:  0.3932,	Adjusted R-squared:  0.3932 
+F-statistic:  6063 on 1 and 9355 DF,  p-value: < 2.2e-16
+
+> 

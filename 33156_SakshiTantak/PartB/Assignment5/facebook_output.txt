@@ -1,0 +1,225 @@
+> #readr for reading rectangular data such as csv,tsv etc.
+> library(readr)
+> dataset_Facebook <- read_csv2("dataset_Facebook.csv")
+Using ',' as decimal and '.' as grouping mark. Use read_delim() for more control.
+Parsed with column specification:
+cols(
+  `Page total likes` = col_double(),
+  Type = col_character(),
+  Category = col_double(),
+  `Post Month` = col_double(),
+  `Post Weekday` = col_double(),
+  `Post Hour` = col_double(),
+  Paid = col_double(),
+  `Lifetime Post Total Reach` = col_double(),
+  `Lifetime Post Total Impressions` = col_double(),
+  `Lifetime Engaged Users` = col_double(),
+  `Lifetime Post Consumers` = col_double(),
+  `Lifetime Post Consumptions` = col_double(),
+  `Lifetime Post Impressions by people who have liked your Page` = col_double(),
+  `Lifetime Post reach by people who like your Page` = col_double(),
+  `Lifetime People who have liked your Page and engaged with your post` = col_double(),
+  comment = col_double(),
+  like = col_double(),
+  share = col_double(),
+  `Total Interactions` = col_double()
+)
+> dataset_Facebook
+# A tibble: 500 x 19
+   `Page total lik… Type  Category `Post Month` `Post Weekday` `Post Hour`  Paid
+              <dbl> <chr>    <dbl>        <dbl>          <dbl>       <dbl> <dbl>
+ 1           139441 Photo        2           12              4           3     0
+ 2           139441 Stat…        2           12              3          10     0
+ 3           139441 Photo        3           12              3           3     0
+ 4           139441 Photo        2           12              2          10     1
+ 5           139441 Photo        2           12              2           3     0
+ 6           139441 Stat…        2           12              1           9     0
+ 7           139441 Photo        3           12              1           3     1
+ 8           139441 Photo        3           12              7           9     1
+ 9           139441 Stat…        2           12              7           3     0
+10           139441 Photo        3           12              6          10     0
+# … with 490 more rows, and 12 more variables: `Lifetime Post Total Reach` <dbl>,
+#   `Lifetime Post Total Impressions` <dbl>, `Lifetime Engaged Users` <dbl>,
+#   `Lifetime Post Consumers` <dbl>, `Lifetime Post Consumptions` <dbl>, `Lifetime
+#   Post Impressions by people who have liked your Page` <dbl>, `Lifetime Post reach
+#   by people who like your Page` <dbl>, `Lifetime People who have liked your Page
+#   and engaged with your post` <dbl>, comment <dbl>, like <dbl>, share <dbl>, `Total
+#   Interactions` <dbl>
+> View(dataset_Facebook)
+> head(dataset_Facebook)
+# A tibble: 6 x 19
+  `Page total lik… Type  Category `Post Month` `Post Weekday` `Post Hour`  Paid
+             <dbl> <chr>    <dbl>        <dbl>          <dbl>       <dbl> <dbl>
+1           139441 Photo        2           12              4           3     0
+2           139441 Stat…        2           12              3          10     0
+3           139441 Photo        3           12              3           3     0
+4           139441 Photo        2           12              2          10     1
+5           139441 Photo        2           12              2           3     0
+6           139441 Stat…        2           12              1           9     0
+# … with 12 more variables: `Lifetime Post Total Reach` <dbl>, `Lifetime Post Total
+#   Impressions` <dbl>, `Lifetime Engaged Users` <dbl>, `Lifetime Post
+#   Consumers` <dbl>, `Lifetime Post Consumptions` <dbl>, `Lifetime Post Impressions
+#   by people who have liked your Page` <dbl>, `Lifetime Post reach by people who
+#   like your Page` <dbl>, `Lifetime People who have liked your Page and engaged with
+#   your post` <dbl>, comment <dbl>, like <dbl>, share <dbl>, `Total
+#   Interactions` <dbl>
+> # select variables 
+> myvars <- c("Type", "Category", "Paid")
+> new_data <- dataset_Facebook[myvars] 
+> View(new_data)
+> var1 <- dataset_Facebook[c(1,5:10)]
+> View(var1)
+> var1
+# A tibble: 500 x 7
+   `Page total lik… `Post Weekday` `Post Hour`  Paid `Lifetime Post … `Lifetime Post …
+              <dbl>          <dbl>       <dbl> <dbl>            <dbl>            <dbl>
+ 1           139441              4           3     0             2752             5091
+ 2           139441              3          10     0            10460            19057
+ 3           139441              3           3     0             2413             4373
+ 4           139441              2          10     1            50128            87991
+ 5           139441              2           3     0             7244            13594
+ 6           139441              1           9     0            10472            20849
+ 7           139441              1           3     1            11692            19479
+ 8           139441              7           9     1            13720            24137
+ 9           139441              7           3     0            11844            22538
+10           139441              6          10     0             4694             8668
+# … with 490 more rows, and 1 more variable: `Lifetime Engaged Users` <dbl>
+> var2 <- subset(dataset_Facebook,comment>30)
+> View(var2)
+> var2
+# A tibble: 20 x 19
+   `Page total lik… Type  Category `Post Month` `Post Weekday` `Post Hour`  Paid
+              <dbl> <chr>    <dbl>        <dbl>          <dbl>       <dbl> <dbl>
+ 1           139441 Photo        2           12              2          10     1
+ 2           138895 Photo        2           12              5           3     0
+ 3           138895 Photo        2           12              4           2     0
+ 4           137020 Photo        1           10              2           4     0
+ 5           136013 Stat…        2           10              3           2     1
+ 6           135713 Photo        2           10              5           4     1
+ 7           135428 Photo        1            9              3          10     0
+ 8           135195 Stat…        2            9              1          10     0
+ 9           132817 Photo        3            8              4          10     0
+10           131956 Stat…        2            8              2          12     0
+11           131728 Photo        2            7              4           3     0
+12           130791 Photo        2            7              3           5     1
+13           126424 Stat…        2            7              3          13     0
+14           126141 Photo        1            6              4          12     0
+15           117764 Photo        3            5              7           2     0
+16           117764 Photo        3            5              5          13     0
+17           113028 Photo        1            4              6          14     0
+18           111620 Photo        3            4              1          14     1
+19            92507 Photo        3            2              1          13     0
+20            86909 Photo        2            1              4          11     0
+# … with 12 more variables: `Lifetime Post Total Reach` <dbl>, `Lifetime Post Total
+#   Impressions` <dbl>, `Lifetime Engaged Users` <dbl>, `Lifetime Post
+#   Consumers` <dbl>, `Lifetime Post Consumptions` <dbl>, `Lifetime Post Impressions
+#   by people who have liked your Page` <dbl>, `Lifetime Post reach by people who
+#   like your Page` <dbl>, `Lifetime People who have liked your Page and engaged with
+#   your post` <dbl>, comment <dbl>, like <dbl>, share <dbl>, `Total
+#   Interactions` <dbl>
+> #merge data
+> m1 <- dataset_Facebook[c(10:12),c(2,6:7)]
+> m2 <- dataset_Facebook[c(11:14),c(2,7:9)]
+> m3 <- merge(m1,m2,by="Paid")
+> View(m3)
+> m3
+   Paid Type.x Post Hour Type.y Lifetime Post Total Reach
+1     0  Photo        10 Status                     21744
+2     0  Photo        10  Photo                      3112
+3     0  Photo        10  Photo                      2847
+4     0  Photo        10  Photo                      2549
+5     0 Status        10 Status                     21744
+6     0 Status        10  Photo                      3112
+7     0 Status        10  Photo                      2847
+8     0 Status        10  Photo                      2549
+9     0  Photo        10 Status                     21744
+10    0  Photo        10  Photo                      3112
+11    0  Photo        10  Photo                      2847
+12    0  Photo        10  Photo                      2549
+   Lifetime Post Total Impressions
+1                            42334
+2                             5590
+3                             5133
+4                             4896
+5                            42334
+6                             5590
+7                             5133
+8                             4896
+9                            42334
+10                            5590
+11                            5133
+12                            4896
+> #sort data
+> s1 <- dataset_Facebook[order(dataset_Facebook$comment),]
+> View(s1)
+> s1
+# A tibble: 500 x 19
+   `Page total lik… Type  Category `Post Month` `Post Weekday` `Post Hour`  Paid
+              <dbl> <chr>    <dbl>        <dbl>          <dbl>       <dbl> <dbl>
+ 1           139441 Photo        3           12              3           3     0
+ 2           139441 Photo        3           12              7           9     1
+ 3           139441 Stat…        2           12              7           3     0
+ 4           139441 Stat…        2           12              5          10     0
+ 5           139441 Photo        2           12              5          10     0
+ 6           139441 Photo        2           12              5          10     0
+ 7           138414 Photo        3           12              1          11     0
+ 8           138414 Photo        1           12              7          10     0
+ 9           138414 Link         1           12              7          10     0
+10           138414 Photo        3           12              7           3     0
+# … with 490 more rows, and 12 more variables: `Lifetime Post Total Reach` <dbl>,
+#   `Lifetime Post Total Impressions` <dbl>, `Lifetime Engaged Users` <dbl>,
+#   `Lifetime Post Consumers` <dbl>, `Lifetime Post Consumptions` <dbl>, `Lifetime
+#   Post Impressions by people who have liked your Page` <dbl>, `Lifetime Post reach
+#   by people who like your Page` <dbl>, `Lifetime People who have liked your Page
+#   and engaged with your post` <dbl>, comment <dbl>, like <dbl>, share <dbl>, `Total
+#   Interactions` <dbl>
+> s2 <- dataset_Facebook[order(dataset_Facebook$comment, -dataset_Facebook$share),]
+> View(s2)
+> s2
+# A tibble: 500 x 19
+   `Page total lik… Type  Category `Post Month` `Post Weekday` `Post Hour`  Paid
+              <dbl> <chr>    <dbl>        <dbl>          <dbl>       <dbl> <dbl>
+ 1           139441 Stat…        2           12              7           3     0
+ 2           111620 Photo        3            4              4           7     1
+ 3            93470 Photo        1            2              5          12     0
+ 4            81370 Photo        2            1              4           4    NA
+ 5           136013 Stat…        2           10              5           3     0
+ 6           138414 Photo        3           12              7           3     0
+ 7            81370 Photo        2            1              5           8     0
+ 8           125612 Photo        1            6              2          13     0
+ 9           131630 Photo        3            7              2          13     0
+10           119198 Photo        3            5              2           1     0
+# … with 490 more rows, and 12 more variables: `Lifetime Post Total Reach` <dbl>,
+#   `Lifetime Post Total Impressions` <dbl>, `Lifetime Engaged Users` <dbl>,
+#   `Lifetime Post Consumers` <dbl>, `Lifetime Post Consumptions` <dbl>, `Lifetime
+#   Post Impressions by people who have liked your Page` <dbl>, `Lifetime Post reach
+#   by people who like your Page` <dbl>, `Lifetime People who have liked your Page
+#   and engaged with your post` <dbl>, comment <dbl>, like <dbl>, share <dbl>, `Total
+#   Interactions` <dbl>
+> # Transposing Data (reversing rows and columns)
+> temp <- dataset_Facebook[1:5,1:4]
+> temp
+# A tibble: 5 x 4
+  `Page total likes` Type   Category `Post Month`
+               <dbl> <chr>     <dbl>        <dbl>
+1             139441 Photo         2           12
+2             139441 Status        2           12
+3             139441 Photo         3           12
+4             139441 Photo         2           12
+5             139441 Photo         2           12
+> t(temp)
+                 [,1]     [,2]     [,3]     [,4]     [,5]    
+Page total likes "139441" "139441" "139441" "139441" "139441"
+Type             "Photo"  "Status" "Photo"  "Photo"  "Photo" 
+Category         "2"      "2"      "3"      "2"      "2"     
+Post Month       "12"     "12"     "12"     "12"     "12"    
+> # Melt, i.e. each row is a unique ID-variable combination
+> m1 <- melt('Category', id <-  c("Type","Lifetime.Post.Total.Reach"))
+> m2 <- m1 # Extra variable
+> View(m1)
+> head(m1)
+     value
+1 Category
+> tail(m1)
+     value
+1 Category

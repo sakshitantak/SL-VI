@@ -1,0 +1,4 @@
+prn,name,roll_no,dept,gpa
+9876A,Neha,1,IT,8
+4531A,Akshita,2,IT,7
+1922A,Sameer,3,MBBS,6
